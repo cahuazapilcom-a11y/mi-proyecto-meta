@@ -33,7 +33,7 @@ app.post('/', async (req, res) => {
             const from = message.from; // Número del usuario
             const text = message.text.body; // Texto que te enviaron
 
-            console.log(Mensaje recibido de ${from}: ${text});
+            console.log('Mensaje recibido de ${from}: ${text}');
 
             // ENVIAR RESPUESTA AUTOMÁTICA
             try {
@@ -58,5 +58,5 @@ app.post('/', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(Servidor activo en el puerto ${port});
+    console.log('Servidor activo en el puerto ${port}');
 });
