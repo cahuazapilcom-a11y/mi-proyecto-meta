@@ -1,15 +1,15 @@
 const express = require('express');
-const axios = require('axios'); // Nueva dependencia para enviar mensajes
+const axios = require('axios');
 const app = express();
 
 app.use(express.json());
 
 const port = process.env.PORT || 3000;
 const verifyToken = process.env.VERIFY_TOKEN;
-const accessToken = process.env.WHATSAPP_TOKEN; // Tu Token de Meta
-const phoneId = process.env.PHONE_ID; // Tu ID de número
+const accessToken = process.env.WHATSAPP_TOKEN;
+const phoneId = process.env.PHONE_ID;
 
-// Verificación del Webhook (GET) - Ya lo tienes y funciona
+// Verificación del Webhook (GET)
 app.get('/', (req, res) => {
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
@@ -30,33 +30,39 @@ app.post('/', async (req, res) => {
         if (body.entry && body.entry[0].changes && body.entry[0].changes[0].value.messages) {
             
             const message = body.entry[0].changes[0].value.messages[0];
-            const from = message.from; // Número del usuario
-            const text = message.text.body; // Texto que te enviaron
+            const from = message.from; 
+            const text = message.text.body;
 
             console.log(`Mensaje recibido de ${from}: ${text}`);
 
-// ENVIAR RESPUESTA AUTOMÁTICA
-try {
-    await axios({
-        method: "POST",
-        url: `https://graph.facebook.com/v18.0/${phoneId}/messages`,
-        data: {
-            messaging_product: "whatsapp",
-            to: from, // El número que capturaste en la línea 33
-            type: "text",
-            text: { body: "¡Hola! Recibí tu mensaje: " + text }
-        },
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessToken}` // Variable de la línea 9
+            // ENVIAR RESPUESTA AUTOMÁTICA
+            try {
+                await axios({
+                    method: "POST",
+                    url: `https://graph.facebook.com/v18.0/${phoneId}/messages`,
+                    data: {
+                        messaging_product: "whatsapp",
+                        to: from,
+                        type: "text",
+                        text: { body: "Hola, recibí tu mensaje: " + text }
+                    },
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${accessToken}`
+                    }
+                });
+            } catch (error) {
+                console.error("Error al enviar:", error.response ? error.response.data : error.message);
+            }
         }
-    });
-    console.log("Mensaje enviado exitosamente");
-} catch (error) {
-    console.error("Error al enviar mensaje:", error.response ? error.response.data : error.message);
-}
+        // IMPORTANTE: Responder siempre con 200 a Meta
+        res.sendStatus(200);
+    } else {
+        res.sendStatus(404);
+    }
+}); // <--- Verifica que esta llave y paréntesis existan
 
-// ESTO ES VITAL: Avisar a Meta que recibiste el paquete
-res.sendStatus(200);
-
+app.listen(port, () => {
+    console.log(`Servidor escuchando en el puerto ${port}`);
+});
         
