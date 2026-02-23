@@ -33,19 +33,19 @@ app.post('/', async (req, res) => {
             const from = message.from; // Número del usuario
             const text = message.text.body; // Texto que te enviaron
 
-            console.log('Mensaje recibido de ${from}: ${text}');
+            console.log(`Mensaje recibido de ${from}: ${text}`);
 
             // ENVIAR RESPUESTA AUTOMÁTICA
             try {
                 await axios({
                     method: "POST",
-                    url: https://graph.facebook.com/v18.0/${phoneId}/messages,
+                    url: `https://graph.facebook.com/v18.0/${PHONE_Id}/messages`,
                     data: {
                         messaging_product: "whatsapp",
                         to: from,
                         text: { body: "¡Hola! Soy tu bot. Recibí tu mensaje: " + text },
                     },
-                    headers: { "Authorization": Bearer ${accessToken} },
+                    headers: {"Content-Type":"application/json","Authorization":`Bearer ${accessToken}` },
                 });
             } catch (error) {
                 console.error("Error al enviar mensaje:", error.response ? error.response.data : error.message);
@@ -58,5 +58,5 @@ app.post('/', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log('Servidor activo en el puerto ${port}');
+    console.log(`Servidor activo en el puerto ${port}`);
 });
