@@ -58,5 +58,5 @@ app.post('/', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(Mensaje recibido de ${from}: ${text});
+    console.log(Servidor activo en el puerto ${port});
 });
