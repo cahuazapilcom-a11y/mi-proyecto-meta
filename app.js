@@ -35,28 +35,28 @@ app.post('/', async (req, res) => {
 
             console.log(`Mensaje recibido de ${from}: ${text}`);
 
-            // ENVIAR RESPUESTA AUTOMÁTICA
-            try {
-                await axios({
-                    method: "POST",
-                    url: `https://graph.facebook.com/v18.0/${PHONE_Id}/messages`,
-                    data: {
-                        messaging_product: "whatsapp",
-                        to: from,
-                        text: { body: "¡Hola! Soy tu bot. Recibí tu mensaje: " + text },
-                    },
-                    headers: {"Content-Type":"application/json","Authorization":`Bearer ${accessToken}` },
-                });
-            } catch (error) {
-                console.error("Error al enviar mensaje:", error.response ? error.response.data : error.message);
-            }
+// ENVIAR RESPUESTA AUTOMÁTICA
+try {
+    await axios({
+        method: "POST",
+        url: `https://graph.facebook.com/v18.0/${phoneId}/messages`,
+        data: {
+            messaging_product: "whatsapp",
+            to: from, // El número que capturaste en la línea 33
+            type: "text",
+            text: { body: "¡Hola! Recibí tu mensaje: " + text }
+        },
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}` // Variable de la línea 9
         }
-        res.sendStatus(200);
-    } else {
-        res.sendStatus(404);
-    }
-});
+    });
+    console.log("Mensaje enviado exitosamente");
+} catch (error) {
+    console.error("Error al enviar mensaje:", error.response ? error.response.data : error.message);
+}
 
-app.listen(port, () => {
-    console.log(`Servidor activo en el puerto ${port}`);
-});
+// ESTO ES VITAL: Avisar a Meta que recibiste el paquete
+res.sendStatus(200);
+
+        
