@@ -1,37 +1,62 @@
-// Import Express.js
 const express = require('express');
-
-// Create an Express app
+const axios = require('axios'); // Nueva dependencia para enviar mensajes
 const app = express();
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
-// Set port and verify_token
 const port = process.env.PORT || 3000;
 const verifyToken = process.env.VERIFY_TOKEN;
+const accessToken = process.env.WHATSAPP_TOKEN; // Tu Token de Meta
+const phoneId = process.env.PHONE_ID; // Tu ID de número
 
-// Route for GET requests
+// Verificación del Webhook (GET) - Ya lo tienes y funciona
 app.get('/', (req, res) => {
-  const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.verify_token': token } = req.query;
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
 
-  if (mode === 'subscribe' && token === verifyToken) {
-    console.log('WEBHOOK VERIFIED');
-    res.status(200).send(challenge);
-  } else {
-    res.status(403).end();
-  }
+    if (mode === 'subscribe' && token === verifyToken) {
+        res.status(200).send(challenge);
+    } else {
+        res.sendStatus(403);
+    }
 });
 
-// Route for POST requests
-app.post('/', (req, res) => {
-  const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  console.log(`\n\nWebhook received ${timestamp}\n`);
-  console.log(JSON.stringify(req.body, null, 2));
-  res.status(200).end();
+// Recepción y respuesta de mensajes (POST)
+app.post('/', async (req, res) => {
+    const body = req.body;
+
+    if (body.object === 'whatsapp_business_account') {
+        if (body.entry && body.entry[0].changes && body.entry[0].changes[0].value.messages) {
+            
+            const message = body.entry[0].changes[0].value.messages[0];
+            const from = message.from; // Número del usuario
+            const text = message.text.body; // Texto que te enviaron
+
+            console.log(Mensaje recibido de ${from}: ${text});
+
+            // ENVIAR RESPUESTA AUTOMÁTICA
+            try {
+                await axios({
+                    method: "POST",
+                    url: https://graph.facebook.com/v18.0/${phoneId}/messages,
+                    data: {
+                        messaging_product: "whatsapp",
+                        to: from,
+                        text: { body: "¡Hola! Soy tu bot. Recibí tu mensaje: " + text },
+                    },
+                    headers: { "Authorization": Bearer ${accessToken} },
+                });
+            } catch (error) {
+                console.error("Error al enviar mensaje:", error.response ? error.response.data : error.message);
+            }
+        }
+        res.sendStatus(200);
+    } else {
+        res.sendStatus(404);
+    }
 });
 
-// Start the server
 app.listen(port, () => {
-  console.log(`\nListening on port ${port}\n`);
+    console.log(Servidor activo en puerto ${port});
 });
