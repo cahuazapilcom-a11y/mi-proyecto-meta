@@ -8,7 +8,7 @@ const determinarFlujo = async (numero, mensajeRecibido) => {
         .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
 
     // 2. Definimos el mensaje de bienvenida largo
-    const mensajeBienvenida = "¡Hola! Bienvenido a nuestro servicio Techo Propio 🏠. ¿En qué puedo ayudarte?\n\nCual es su consulta respecto al programa:\n1. Horarios\n2. Ubicación\n3. Hablar con un asesor";
+    const mensajeBienvenida = "¡Hola! Bienvenido a FLYHOUSE TECHO PROPIO 🏠. ¿En qué puedo ayudarte?\n\nCual es su consulta respecto al programa:\n1. Horarios\n2. Ubicación\n3. Hablar con un asesor";
 
     // 3. Lógica de respuesta fluida
     if (texto === "hola" || texto === "hi") {
