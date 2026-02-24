@@ -1,25 +1,24 @@
-// Cambia la línea 2 (si decides importar el servicio aquí luego) y la 5
+// === 1. CONFIGURACIÓN INICIAL ===
 require('dotenv').config();
 const express = require('express');
 const app = express();
-
-// CORRECCIÓN AQUÍ: Agregamos "src/" a la ruta
-const { determinarFlujo } = require('./src/flows/mainFlow'); 
+const { determinarFlujo } = require('./src/flows/mainFlow');
 
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
 // === 2. VERIFICACIÓN DEL WEBHOOK (GET) ===
-// Esto es solo para que Facebook confirme que tu servidor existe
 app.get('/webhook', (req, res) => {
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
 
     if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
+        console.log("✅ Webhook verificado correctamente");
         res.status(200).send(challenge);
     } else {
+        console.error("❌ Fallo en la verificación del token");
         res.sendStatus(403);
     }
 });
@@ -34,24 +33,26 @@ app.post('/webhook', async (req, res) => {
 
         if (mensajeObj) {
             const numeroUsuario = mensajeObj.from;
-            const textoRecibido = mensajeObj.text?.body;
+            const textoRecibido = mensajeObj.text?.body || "";
 
-            console.log(`📩 Mensaje de ${numeroUsuario}: ${textoRecibido}`);
+            // Log informativo para saber qué está llegando
+            console.log(`📩 [NUEVO MENSAJE] De: ${numeroUsuario} | Texto: "${textoRecibido}"`);
 
-            // Delegamos TODA la respuesta a nuestro archivo de flujos
+            // Enviamos al flujo de conversación
             await determinarFlujo(numeroUsuario, textoRecibido);
         }
 
-        // Importante: Siempre responder 200 a Meta inmediatamente
+        // Siempre responder 200 a Meta para evitar bloqueos
         res.sendStatus(200);
 
     } catch (error) {
-        console.error("❌ Error en Webhook:", error);
-        res.sendStatus(500);
+        console.error("❌ ERROR PROCESANDO MENSAJE:", error.message);
+        // Respondemos 200 de todas formas para que Meta no reintente el envío fallido infinitamente
+        res.sendStatus(200);
     }
 });
 
 // === 4. INICIO DEL SERVIDOR ===
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor listo en puerto ${PORT}`);
+    console.log(`🚀 Servidor activo y escuchando en puerto ${PORT}`);
 });
