@@ -1,3 +1,16 @@
+// Al principio de app.js
+const metaService = require('./services/metaService');
+
+// Luego, dentro de tu función del webhook, simplemente lo llamas:
+app.post('/webhook', async (req, res) => {
+    // ... tu lógica para extraer el mensaje ...
+    
+    if (mensajeRecibido === "Hola") {
+        await metaService.enviarMensajeTexto(numeroUsuario, "¡Hola! Bienvenido al bot.");
+    }
+
+    res.sendStatus(200);
+});
 const express = require('express');
 const axios = require('axios');
 const app = express();
