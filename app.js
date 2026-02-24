@@ -1,8 +1,10 @@
-// === 1. IMPORTACIONES Y CONFIGURACIÓN ===
+// Cambia la línea 2 (si decides importar el servicio aquí luego) y la 5
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const { determinarFlujo } = require('./flows/mainFlow'); // Importamos la lógica de conversación
+
+// CORRECCIÓN AQUÍ: Agregamos "src/" a la ruta
+const { determinarFlujo } = require('./src/Flows/mainFlow'); 
 
 app.use(express.json());
 
