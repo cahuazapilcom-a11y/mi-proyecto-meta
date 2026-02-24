@@ -21,7 +21,7 @@ const determinarFlujo = async (numero, mensajeRecibido) => {
     } 
     else if (texto.includes("ubicacion") || texto.includes("donde")) {
         // Responde a ubicación o preguntas de "¿dónde están?"
-        await metaService.enviarMensajeTexto(numero, "Nos encontramos en la Av. Principal 123, Lima. 📍");
+        await metaService.enviarMensajeTexto(numero, "Nos encontramos en calle teniente secada 400. 📍");
     } 
     else if (texto.includes("gracias")) {
         await metaService.enviarMensajeTexto(numero, "¡De nada! Es un placer ayudarte. 😊");
