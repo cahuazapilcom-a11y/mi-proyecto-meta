@@ -1,29 +1,34 @@
 const metaService = require('../services/metaService');
 
 const determinarFlujo = async (numero, mensajeRecibido) => {
-    // 1. Limpiamos el texto: minúsculas, sin espacios y QUITAMOS PUNTUACIÓN
+    // 1. Limpiamos el texto para que no importen puntos, espacios o mayúsculas
     const texto = mensajeRecibido
         .toLowerCase()
         .trim()
-        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""); // Esto quita puntos, comas, etc.
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
 
-    const respuestas = {
-        "hola": "¡Hola! Bienvenido a nuestro servicio de inmobiliaria ,. ¿En qué puedo ayudarte?\n1. Horarios\n2. Ubicación\n3. Hablar con un asesor",
-        "horarios": "Estamos abiertos de Lunes a Viernes de 9:00 AM a 6:00 PM. 🕒",
-        "ubicacion": "Nos encontramos en la Av. Principal 123, Lima. 📍",
-        "gracias": "¡De nada! Es un placer ayudarte. 😊"
-    };
+    // 2. Definimos el mensaje de bienvenida largo
+    const mensajeBienvenida = "¡Hola! Bienvenido a nuestro servicio Techo Propio 🏠. ¿En qué puedo ayudarte?\n\nCual es su consulta respecto al programa:\n1. Horarios\n2. Ubicación\n3. Hablar con un asesor";
 
-    // 2. Buscamos coincidencia exacta después de limpiar
-    if (respuestas[texto]) {
-        await metaService.enviarMensajeTexto(numero, respuestas[texto]);
-    } else {
-        // 3. Opcional: Buscar si el mensaje CONTIENE la palabra clave
-        if (texto.includes("hola")) {
-             await metaService.enviarMensajeTexto(numero, respuestas["hola"]);
-        } else {
-             await metaService.enviarMensajeTexto(numero, "Lo siento, no entendí eso. Intenta escribiendo 'Hola' para ver las opciones.");
-        }
+    // 3. Lógica de respuesta fluida
+    if (texto === "hola" || texto === "hi") {
+        // Responde al saludo
+        await metaService.enviarMensajeTexto(numero, mensajeBienvenida);
+    } 
+    else if (texto.includes("horario")) {
+        // Responde si el mensaje contiene la palabra "horario"
+        await metaService.enviarMensajeTexto(numero, "Estamos abiertos de Lunes a Viernes de 9:00 AM a 6:00 PM. 🕒");
+    } 
+    else if (texto.includes("ubicacion") || texto.includes("donde")) {
+        // Responde a ubicación o preguntas de "¿dónde están?"
+        await metaService.enviarMensajeTexto(numero, "Nos encontramos en la Av. Principal 123, Lima. 📍");
+    } 
+    else if (texto.includes("gracias")) {
+        await metaService.enviarMensajeTexto(numero, "¡De nada! Es un placer ayudarte. 😊");
+    } 
+    else {
+        // Respuesta por defecto si no entiende nada de lo anterior
+        await metaService.enviarMensajeTexto(numero, "Lo siento, no entendí tu consulta. Escribe 'Hola' para ver mis opciones de Techo Propio.");
     }
 };
 
