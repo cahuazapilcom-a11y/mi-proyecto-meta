@@ -4,7 +4,7 @@ const express = require('express');
 const app = express();
 
 // CORRECCIÓN AQUÍ: Agregamos "src/" a la ruta
-const { determinarFlujo } = require('./src/Flows/mainFlow'); 
+const { determinarFlujo } = require('./src/flows/mainFlow'); 
 
 app.use(express.json());
 
