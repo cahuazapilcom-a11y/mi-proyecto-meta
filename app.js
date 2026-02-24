@@ -1,81 +1,55 @@
-// Al principio de app.js
-const metaService = require('./services/metaService');
-
-// Luego, dentro de tu función del webhook, simplemente lo llamas:
-app.post('/webhook', async (req, res) => {
-    // ... tu lógica para extraer el mensaje ...
-    
-    if (mensajeRecibido === "Hola") {
-        await metaService.enviarMensajeTexto(numeroUsuario, "¡Hola! Bienvenido al bot.");
-    }
-
-    res.sendStatus(200);
-});
+// === 1. IMPORTACIONES Y CONFIGURACIÓN ===
+require('dotenv').config();
 const express = require('express');
-const axios = require('axios');
 const app = express();
+const { determinarFlujo } = require('./flows/mainFlow'); // Importamos la lógica de conversación
 
 app.use(express.json());
 
-const port = process.env.PORT || 3000;
-const verifyToken = process.env.VERIFY_TOKEN;
-const accessToken = process.env.WHATSAPP_TOKEN;
-const phoneId = process.env.PHONE_ID;
+const PORT = process.env.PORT || 3000;
 
-// Verificación del Webhook (GET)
-app.get('/', (req, res) => {
+// === 2. VERIFICACIÓN DEL WEBHOOK (GET) ===
+// Esto es solo para que Facebook confirme que tu servidor existe
+app.get('/webhook', (req, res) => {
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
 
-    if (mode === 'subscribe' && token === verifyToken) {
+    if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
         res.status(200).send(challenge);
     } else {
         res.sendStatus(403);
     }
 });
 
-// Recepción y respuesta de mensajes (POST)
-app.post('/', async (req, res) => {
-    const body = req.body;
+// === 3. RECEPCIÓN DE MENSAJES (POST) ===
+app.post('/webhook', async (req, res) => {
+    try {
+        const entry = req.body.entry?.[0];
+        const changes = entry?.changes?.[0];
+        const value = changes?.value;
+        const mensajeObj = value?.messages?.[0];
 
-    if (body.object === 'whatsapp_business_account') {
-        if (body.entry && body.entry[0].changes && body.entry[0].changes[0].value.messages) {
-            
-            const message = body.entry[0].changes[0].value.messages[0];
-            const from = message.from; 
-            const text = message.text.body;
+        if (mensajeObj) {
+            const numeroUsuario = mensajeObj.from;
+            const textoRecibido = mensajeObj.text?.body;
 
-            console.log(`Mensaje recibido de ${from}: ${text}`);
+            console.log(`📩 Mensaje de ${numeroUsuario}: ${textoRecibido}`);
 
-            // ENVIAR RESPUESTA AUTOMÁTICA
-            try {
-                await axios({
-                    method: "POST",
-                    url: `https://graph.facebook.com/v18.0/${phoneId}/messages`,
-                    data: {
-                        messaging_product: "whatsapp",
-                        to: from,
-                        type: "text",
-                        text: { body: "Hola, recibí tu mensaje: " + text }
-                    },
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${accessToken}`
-                    }
-                });
-            } catch (error) {
-                console.error("Error al enviar:", error.response ? error.response.data : error.message);
-            }
+            // Delegamos TODA la respuesta a nuestro archivo de flujos
+            await determinarFlujo(numeroUsuario, textoRecibido);
         }
-        // IMPORTANTE: Responder siempre con 200 a Meta
-        res.sendStatus(200);
-    } else {
-        res.sendStatus(404);
-    }
-}); // <--- Verifica que esta llave y paréntesis existan
 
-app.listen(port, () => {
-    console.log(`Servidor escuchando en el puerto ${port}`);
+        // Importante: Siempre responder 200 a Meta inmediatamente
+        res.sendStatus(200);
+
+    } catch (error) {
+        console.error("❌ Error en Webhook:", error);
+        res.sendStatus(500);
+    }
 });
-        
+
+// === 4. INICIO DEL SERVIDOR ===
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor listo en puerto ${PORT}`);
+});
