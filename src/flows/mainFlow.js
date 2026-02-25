@@ -23,6 +23,15 @@ const determinarFlujo = async (numero, mensajeRecibido) => {
     else if (texto.includes("ubicacion") || texto.includes("donde")) {
         await metaService.enviarMensajeTexto(numero, "Nos encontramos en la Av. Principal 123, Lima. 📍");
     } 
+    // ... (dentro de tu función determinarFlujo)
+    
+    else if (texto.includes("asesor") || texto === "3") {
+        // Notificación interna en los Logs de Render
+        console.log(`⚠️ ALERTA: El usuario ${numero} solicita hablar con un asesor humano.`);
+        
+        await metaService.enviarMensajeTexto(numero, "He notificado a un asesor. Se pondrán en contacto contigo a la brevedad posible por este medio. 😊");
+    }
+       
     else if (texto.includes("requisitos") || texto === "4") {
         // Primero confirmamos al usuario
         await metaService.enviarMensajeTexto(numero, "Excelente. Te estoy enviando el PDF con los requisitos para el programa Techo Propio. Espere un momento... ⏳");
