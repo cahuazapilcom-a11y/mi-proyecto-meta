@@ -23,13 +23,19 @@ const determinarFlujo = async (numero, mensajeRecibido) => {
     else if (texto.includes("ubicacion") || texto.includes("donde")) {
         await metaService.enviarMensajeTexto(numero, "Nos encontramos en la Av. Principal 123, Lima. 📍");
     } 
-    // ... (dentro de tu función determinarFlujo)
-    
+        // ... dentro de determinarFlujo ...
+
     else if (texto.includes("asesor") || texto === "3") {
-        // Notificación interna en los Logs de Render
-        console.log(`⚠️ ALERTA: El usuario ${numero} solicita hablar con un asesor humano.`);
+        // 1. Notificación al cliente
+        await metaService.enviarMensajeTexto(numero, "He notificado a un asesor. Se pondrán en contacto contigo a la brevedad posible. 😊");
+
+        // 2. Alerta automática a TU número personal
+        const miNumero = process.env.MI_NUMERO_PERSONAL;
+        const alertaAsesor = `🚨 *ALERTA ASESOR* 🚨\nEl usuario @${numero} ha solicitado ayuda humana ahora mismo.`;
         
-        await metaService.enviarMensajeTexto(numero, "He notificado a un asesor. Se pondrán en contacto contigo a la brevedad posible por este medio. 😊");
+        await metaService.enviarMensajeTexto(miNumero, alertaAsesor);
+        
+        console.log(`⚠️ Alerta enviada al asesor (${miNumero}) por el usuario ${numero}`);
     }
        
     else if (texto.includes("requisitos") || texto === "4") {
