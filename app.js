@@ -22,11 +22,6 @@ app.get('/webhook', (req, res) => {
         res.sendStatus(403);
     }
 });
-
-// === 3. RECEPCIÓN DE MENSAJES (POST) ===
-app.post('/webhook', async (req, res) => {
-    try {
-        const entry = req.body.entry?.[0];
         const changes = entry?.changes?.[0];
         const value = changes?.value;
         const mensajeObj = value?.messages?.[0];
@@ -35,12 +30,19 @@ app.post('/webhook', async (req, res) => {
             const numeroUsuario = mensajeObj.from;
             const textoRecibido = mensajeObj.text?.body || "";
 
-            // Log informativo para saber qué está llegando
-            console.log(`📩 [NUEVO MENSAJE] De: ${numeroUsuario} | Texto: "${textoRecibido}"`);
+            // --- NUEVA LÓGICA PARA EL NOMBRE ---
+            // Extraemos el nombre del contacto si existe, de lo contrario usamos "amigo(a)"
+            const contact = value?.contacts?.[0];
+            const name = contact?.profile?.name || "amigo(a)";
+            // ------------------------------------
 
-            // Enviamos al flujo de conversación
-            await determinarFlujo(numeroUsuario, textoRecibido);
+            // Log informativo mejorado
+            console.log(`📩 [NUEVO MENSAJE] De: ${name} (${numeroUsuario}) | Texto: "${textoRecibido}"`);
+
+            // Pasamos el nombre como tercer argumento a determinarFlujo
+            await determinarFlujo(numeroUsuario, textoRecibido, name);
         }
+
 
         // Siempre responder 200 a Meta para evitar bloqueos
         res.sendStatus(200);
