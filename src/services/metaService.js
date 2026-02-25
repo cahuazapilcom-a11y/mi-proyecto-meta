@@ -1,35 +1,47 @@
 const axios = require('axios');
 
-/**
- * Servicio para interactuar con la API de WhatsApp Business (Meta)
- */
-const enviarMensajeTexto = async (numeroDestino, cuerpoTexto) => {
+const enviarMensajeTexto = async (numero, texto) => {
     try {
-        const url = `https://graph.facebook.com/${process.env.META_VERSION}/${process.env.META_PHONE_ID}/messages`;
-        
         const data = {
             messaging_product: "whatsapp",
-            to: numeroDestino,
+            to: numero,
             type: "text",
-            text: { body: cuerpoTexto }
+            text: { body: texto }
         };
 
-        const config = {
-            headers: {
-                'Authorization': `Bearer ${process.env.META_TOKEN}`,
-                'Content-Type': 'application/json'
-            }
-        };
-
-        const response = await axios.post(url, data, config);
-        return response.data;
-        
+        await axios.post(
+            `https://graph.facebook.com/${process.env.META_VERSION}/${process.env.META_PHONE_ID}/messages`,
+            data,
+            { headers: { Authorization: `Bearer ${process.env.META_TOKEN}` } }
+        );
     } catch (error) {
-        console.error("❌ Error enviando mensaje a Meta:", error.response ? error.response.data : error.message);
-        throw error;
+        console.error("❌ Error enviando texto:", error.response?.data || error.message);
     }
 };
 
-module.exports = {
-    enviarMensajeTexto
+// ESTA ES LA FUNCIÓN QUE TE FALTABA
+const enviarMensajePDF = async (numero, urlPdf, nombreArchivo) => {
+    try {
+        const data = {
+            messaging_product: "whatsapp",
+            to: numero,
+            type: "document",
+            document: {
+                link: urlPdf,
+                filename: nombreArchivo
+            }
+        };
+
+        await axios.post(
+            `https://graph.facebook.com/${process.env.META_VERSION}/${process.env.META_PHONE_ID}/messages`,
+            data,
+            { headers: { Authorization: `Bearer ${process.env.META_TOKEN}` } }
+        );
+        console.log("📄 PDF enviado con éxito");
+    } catch (error) {
+        console.error("❌ Error enviando PDF:", error.response?.data || error.message);
+    }
 };
+
+// IMPORTANTE: Exportar ambas funciones
+module.exports = { enviarMensajeTexto, enviarMensajePDF };
