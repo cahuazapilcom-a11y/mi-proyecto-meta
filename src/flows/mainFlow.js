@@ -11,16 +11,16 @@ const determinarFlujo = async (numero, mensajeRecibido) => {
     const urlRequisitos = "https://drive.google.com/uc?export=download&id=1HBRYma72_lk4iITQGsKrW17e_RxDmTeq";
 
     // 3. Definición del mensaje de bienvenida
-    const mensajeBienvenida = "¡Hola! Bienvenido a nuestro servicio de asesoría para Techo Propio 🏠.\n\n¿En qué puedo ayudarte?\n\nCual es su consulta respecto al programa:\n1. Horarios\n2. Ubicación\n3. Hablar con un asesor\n4. Requisitos (Recibir PDF) 📄";
+    const mensajeBienvenida = "¡Hola! Bienvenido a FLYHOUSE Techo Propio 🏠.\n\n¿En qué puedo ayudarte?\n\nCual es su consulta al  respecto:\n1. Horarios\n2. Ubicación\n3. Hablar con un asesor\n4. Requisitos (Recibir PDF) 📄";
 
     // 4. Lógica de decisiones
     if (texto === "hola" || texto === "hi" || texto === "inicio") {
         await metaService.enviarMensajeTexto(numero, mensajeBienvenida);
     } 
     else if (texto.includes("horario")) {
-        await metaService.enviarMensajeTexto(numero, "Estamos abiertos de Lunes a Viernes de 9:00 AM a 6:00 PM. 🕒");
+        await metaService.enviarMensajeTexto(numero, "Estamos abiertos de Lunes a Viernes de 8:00 AM a 1:00 PM , 3.00 PM a 6.00 PM. 🕒");
     } 
-    else if (texto.includes("ubicacion") || texto.includes("ubicacion")) {
+    else if (texto.includes("ubicacion") || texto.includes("donde")) {
         await metaService.enviarMensajeTexto(numero, "Nos encontramos en teniente secada 400. 📍");
     } 
         // ... dentro de determinarFlujo ...
@@ -31,7 +31,7 @@ const determinarFlujo = async (numero, mensajeRecibido) => {
 
         // 2. Alerta automática a TU número personal
         const miNumero = process.env.MI_NUMERO_PERSONAL;
-        const alertaAsesor = `🚨 *ALERTA ASESOR* 🚨\nEl usuario @${numero} ha solicitado ayuda humana ahora mismo.`;
+        const alertaAsesor = `🚨 *ALERTA ASESOR* 🚨\nEl usuario @${numero} ha solicitado ayuda  ahora mismo.`;
         
         await metaService.enviarMensajeTexto(miNumero, alertaAsesor);
         
