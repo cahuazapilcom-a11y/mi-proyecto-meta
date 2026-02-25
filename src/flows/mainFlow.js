@@ -17,7 +17,7 @@ const determinarFlujo = async (numero, mensajeRecibido) => {
     if (texto === "hola" || texto === "hi" || texto === "inicio") {
         await metaService.enviarMensajeTexto(numero, mensajeBienvenida);
     } 
-    else if (texto.includes("horario de atencion ")) {
+    else if (texto.includes("horario")) {
         await metaService.enviarMensajeTexto(numero, "Estamos abiertos de Lunes a Viernes de 8:00 AM a 1:00 PM , 3.00 PM a 6.00 PM. 🕒");
     } 
     else if (texto.includes("ubicacion") || texto.includes("donde")) {
