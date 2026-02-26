@@ -1,7 +1,5 @@
 const express = require('express');
-const axios = require('axios');
-// IMPORTANTE: Esta ruta debe coincidir exactamente con tu carpeta
-const { determinarFlujo } = require('./flows/mainFlow'); 
+const { determinarFlujo } = require('./flows/mainFlow'); // Ruta corregida para Render
 
 const app = express();
 app.use(express.json());
@@ -12,9 +10,7 @@ app.get('/webhook', (req, res) => {
     const challenge = req.query['hub.challenge'];
     if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
         res.status(200).send(challenge);
-    } else {
-        res.sendStatus(403);
-    }
+    } else { res.sendStatus(403); }
 });
 
 app.post('/webhook', async (req, res) => {
@@ -28,23 +24,22 @@ app.post('/webhook', async (req, res) => {
             const numeroUsuario = mensajeObj.from;
             const textoRecibido = mensajeObj.text?.body || "";
 
-            // SOLUCIÓN AL NOMBRE UNDEFINED: Extraemos el contacto correctamente
+            // --- SOLUCIÓN AL NOMBRE ---
+            // Extraemos el nombre del array de contactos que envía Meta
             const contact = value?.contacts?.[0];
-            const name = contact?.profile?.name || "amigo(a)";
+            const name = contact?.profile?.name || "cliente"; 
 
-            console.log(`📩 [MENSAJE] De: ${name} (${numeroUsuario}) | Texto: "${textoRecibido}"`);
+            console.log(`📩 Mensaje de ${name} (${numeroUsuario}): ${textoRecibido}`);
 
-            // Enviamos el nombre como TERCER parámetro
+            // Enviamos 3 parámetros: número, texto y NOMBRE
             await determinarFlujo(numeroUsuario, textoRecibido, name);
         }
         res.sendStatus(200);
     } catch (error) {
-        console.error("❌ ERROR PROCESANDO MENSAJE:", error.message);
-        res.sendStatus(200); 
+        console.error("❌ Error:", error.message);
+        res.sendStatus(200);
     }
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor FLYHOUSE activo en puerto ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`));
