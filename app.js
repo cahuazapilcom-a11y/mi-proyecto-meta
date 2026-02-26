@@ -1,11 +1,10 @@
 const express = require('express');
 const axios = require('axios');
-const { determinarFlujo } = require('./flows/mainFlow');
+const { determinarFlujo } = require('./flows/mainFlow'); 
 
 const app = express();
 app.use(express.json());
 
-// Verificación del Webhook para Meta
 app.get('/webhook', (req, res) => {
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
@@ -18,7 +17,6 @@ app.get('/webhook', (req, res) => {
     }
 });
 
-// Recepción de mensajes
 app.post('/webhook', async (req, res) => {
     try {
         const entry = req.body.entry?.[0];
@@ -30,24 +28,24 @@ app.post('/webhook', async (req, res) => {
             const numeroUsuario = mensajeObj.from;
             const textoRecibido = mensajeObj.text?.body || "";
 
-            // Extraemos el nombre del contacto de WhatsApp
+            // --- CORRECCIÓN DEL NOMBRE ---
             const contact = value?.contacts?.[0];
-            const name = contact?.profile?.name || "amigo(a)";
+            const name = contact?.profile?.name || "cliente"; 
 
-            console.log(`📩 [NUEVO MENSAJE] De: ${name} (${numeroUsuario}) | Texto: "${textoRecibido}"`);
+            console.log(`📩 [MENSAJE] De: ${name} (${numeroUsuario}) | Texto: "${textoRecibido}"`);
 
-            // Enviamos 3 datos: número, texto y NOMBRE
+            // Enviamos los 3 parámetros en el orden exacto
             await determinarFlujo(numeroUsuario, textoRecibido, name);
         }
 
         res.sendStatus(200);
     } catch (error) {
-        console.error("❌ ERROR PROCESANDO MENSAJE:", error.message);
-        res.sendStatus(200); // Siempre respondemos 200 a Meta para evitar bloqueos
+        console.error("❌ ERROR:", error.message);
+        res.sendStatus(200); 
     }
 });
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor activo y escuchando en puerto ${PORT}`);
+    console.log(`🚀 Servidor FLYHOUSE activo en puerto ${PORT}`);
 });
