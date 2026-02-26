@@ -8,7 +8,7 @@ const determinarFlujo = async (numero, mensajeRecibido, name) => {
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quita tildes
         .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
 
-    const urlRequisitos = "https://drive.google.com/file/d/1HBRYma72_lk4iITQGsKrW17e_RxDmTeq/view?usp=drive_link";
+    const urlRequisitos = "https://drive.google.com/drive/home";
 
     // El saludo ya no dirá undefined, dirá el nombre real
     const mensajeBienvenida = `¡Hola ${name}! Bienvenido a *FLYHOUSE*, Tu consulta en línea. 🏠\n\n¿En qué puedo ayudarte?\n\n1. Horarios\n2. Ubicación\n3. Hablar con un asesor\n4. Requisitos (Recibir PDF) 📄`;
