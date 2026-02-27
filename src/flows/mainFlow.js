@@ -38,7 +38,7 @@ const determinarFlujo = async (numero, mensajeRecibido, name = "Cliente") => {
     ) {
       return await metaService.enviarMensajeTexto(
         numero,
-        "😊 De nada, gracias a ti por confiar en FLYHOUSE."
+        "😊 De nada, gracias por confiar en FLYHOUSE."
       );
     }
 
