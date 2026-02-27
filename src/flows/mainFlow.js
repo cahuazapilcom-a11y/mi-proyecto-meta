@@ -3,7 +3,7 @@ const metaService = require("../services/metaService");
 const determinarFlujo = async (numero, mensajeRecibido, name = "Cliente") => {
   try {
 
-    // 🔎 Normalizar texto
+    // 🔎 Normalizar texto (minúsculas y sin tildes)
     const texto = mensajeRecibido
       ?.toLowerCase()
       .trim()
@@ -19,26 +19,23 @@ const determinarFlujo = async (numero, mensajeRecibido, name = "Cliente") => {
     const mostrarMenu = async () => {
       await metaService.enviarBotones(
         numero,
-        `Hola ${name} 👋 Bienvenido a *COORPORACION FLYHOUSE SAC* 🏡\n\nSelecciona una opción:`,
+        `Hola ${name} 👋 Bienvenido a *FLYHOUSE* 🏡\n\nSelecciona una opción:`,
         [
           { id: "HORARIO", title: "🕒 Horarios" },
           { id: "UBICACION", title: "📍 Ubicación" },
-          { id: "ASESOR", title: "👨‍💼 Asesor" }
+          { id: "ASESOR", title: "👨‍💼 Asesor" },
+          { id: "REQUISITOS", title: "📄 Requisitos" }
         ]
       );
     };
 
     /* ==============================
-       RESPUESTA A "GRACIAS"
+       RESPUESTA A GRACIAS
     ============================== */
-    if (
-      texto.includes("gracias") ||
-      texto.includes("muchas gracias") ||
-      texto.includes("ok gracias")
-    ) {
+    if (texto.includes("gracias")) {
       return await metaService.enviarMensajeTexto(
         numero,
-        "😊 De nada, gracias por confiar en FLYHOUSE."
+        "😊 De nada, estoy aquí para ayudarte."
       );
     }
 
@@ -93,16 +90,20 @@ const determinarFlujo = async (numero, mensajeRecibido, name = "Cliente") => {
     }
 
     /* ==============================
-       REQUISITOS
+       REQUISITOS (detecta errores)
     ============================== */
     if (
-      texto === "requisito" ||
-      texto === "requisitos" ||
-      texto === "4"
+      texto.includes("requisito") ||
+      texto.includes("requisto") ||
+      texto.includes("requistos") ||
+      texto.includes("reqisito") ||
+      texto.includes("reqisitos") ||
+      texto === "4" ||
+      texto === "REQUISITOS"
     ) {
       await metaService.enviarMensajeTexto(
         numero,
-        "📄 Te envío los requisitos..."
+        "📄 Te envío los requisitos en PDF. Un momento..."
       );
 
       return await metaService.enviarMensajePDF(
