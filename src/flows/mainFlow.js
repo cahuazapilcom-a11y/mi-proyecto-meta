@@ -2,110 +2,86 @@ const metaService = require("../services/metaService");
 
 const determinarFlujo = async (numero, mensajeRecibido, name = "Cliente") => {
   try {
-
-    // 🔎 Normalizar texto
+    // 🔎 Limpiar texto (minúsculas, sin tildes ni símbolos raros)
     const texto = mensajeRecibido
-      ?.toLowerCase()
+      .toLowerCase()
       .trim()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s]/gi, "");
 
+    // 🔗 Link PDF en descarga directa (IMPORTANTE)
     const urlRequisitos =
       "https://drive.google.com/uc?export=download&id=1HBRYma72_lk4iITQGsKrW17e_RxDmTeq";
 
-    /* ==============================
-       MENÚ CON BOTONES
-    ============================== */
-    const mostrarMenu = async () => {
-      await metaService.enviarBotones(
-        numero,
-        `Hola ${name} 👋 Bienvenido a *FLYHOUSE* 🏡\n\nSelecciona una opción:`,
-        [
-          { id: "HORARIO", title: "🕒 Horarios" },
-          { id: "UBICACION", title: "📍 Ubicación" },
-          { id: "ASESOR", title: "👨‍💼 Asesor" }
-        ]
-      );
-    };
+    const mensajeBienvenida = `¡Hola ${name}! 👋  
+Bienvenido a *FLYHOUSE* 🏡  
 
-    /* ==============================
-       RESPUESTA A "GRACIAS"
-    ============================== */
-    if (
-      texto.includes("gracias") ||
-      texto.includes("muchas gracias") ||
-      texto.includes("ok gracias")
-    ) {
-      return await metaService.enviarMensajeTexto(
-        numero,
-        "😊 De nada, estoy aquí para ayudarte."
-      );
-    }
+Te puedo ayudar con:
+
+1️⃣ Horarios  
+2️⃣ Ubicación  
+3️⃣ Hablar con asesor  
+4️⃣ Requisitos Techo Propio  
+
+Escribe el número o la palabra.`;
 
     /* ==============================
        SALUDO
     ============================== */
-    if (texto === "hola" || texto === "menu" || texto === "inicio") {
-      return await mostrarMenu();
+    if (
+      texto === "hola" ||
+      texto === "hi" ||
+      texto === "inicio" ||
+      texto === "menu"
+    ) {
+      await metaService.enviarMensajeTexto(numero, mensajeBienvenida);
     }
 
     /* ==============================
-       HORARIO
+       HORARIOS
     ============================== */
-    if (
-      texto === "horario" ||
-      texto === "horarios" ||
-      texto === "1" ||
-      texto === "HORARIO"
+    else if (
+      texto.includes("horario") ||
+      texto.includes("hoario") ||
+      texto === "1"
     ) {
-      return await metaService.enviarMensajeTexto(
+      await metaService.enviarMensajeTexto(
         numero,
-        "🕒 Nuestro horario:\n\nLunes a Viernes\n8:00 AM - 1:00 PM\n3:00 PM - 7:00 PM"
+        "🕒 Nuestro horario de atención es:\n\nLunes a Viernes\n8:00 AM a 1:00 PM\n3:00 PM a 7:00 PM"
       );
     }
 
     /* ==============================
        UBICACIÓN
     ============================== */
-    if (
-      texto === "ubicacion" ||
-      texto === "2" ||
-      texto === "UBICACION"
-    ) {
-      return await metaService.enviarMensajeTexto(
+    else if (texto.includes("ubicacion") || texto === "2") {
+      await metaService.enviarMensajeTexto(
         numero,
-        "📍 Estamos en:\nTeniente Secada 400\nYurimaguas - Perú 🇵🇪"
+        "📍 Nos encontramos en:\nTeniente Secada 400\nYurimaguas, Perú 🇵🇪"
       );
     }
 
     /* ==============================
        ASESOR
     ============================== */
-    if (
-      texto === "asesor" ||
-      texto === "3" ||
-      texto === "ASESOR"
-    ) {
-      return await metaService.enviarMensajeTexto(
+    else if (texto.includes("asesor") || texto === "3") {
+      await metaService.enviarMensajeTexto(
         numero,
-        `✅ ${name}, un asesor te contactará en breve.`
+        `✅ ${name}, he notificado a un asesor. Te contactará en breve.`
       );
     }
 
     /* ==============================
-       REQUISITOS
+       REQUISITOS (PDF)
     ============================== */
-    if (
-      texto === "requisito" ||
-      texto === "requisitos" ||
-      texto === "4"
-    ) {
+    else if (texto.includes("requisito") || texto === "4") {
       await metaService.enviarMensajeTexto(
         numero,
-        "📄 Te envío los requisitos..."
+        "📄 Te envío los requisitos en PDF. Un momento..."
       );
 
-      return await metaService.enviarMensajePDF(
+      await metaService.enviarMensajePDF(
         numero,
         urlRequisitos,
         "Requisitos_Techo_Propio.pdf"
@@ -113,12 +89,16 @@ const determinarFlujo = async (numero, mensajeRecibido, name = "Cliente") => {
     }
 
     /* ==============================
-       SI NO ENTIENDE
+       NO ENTENDIDO
     ============================== */
-    await mostrarMenu();
-
+    else {
+      await metaService.enviarMensajeTexto(
+        numero,
+        "🤔 No entendí tu mensaje.\n\nEscribe *Hola* para ver el menú principal."
+      );
+    }
   } catch (error) {
-    console.error("❌ Error en flujo:", error);
+    console.error("❌ Error en determinarFlujo:", error);
   }
 };
 
