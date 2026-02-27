@@ -44,4 +44,4 @@ const enviarMensajePDF = async (numero, urlPdf, nombreArchivo) => {
 };
 
 // IMPORTANTE: Exportar ambas funciones
-module.exports = { enviarMensajeTexto, enviarMensajePDF };
+module.exports = { enviarMensajeTexto, enviarMensajePDF,enviarMensajeImagen };
