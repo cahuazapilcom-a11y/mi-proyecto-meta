@@ -43,7 +43,7 @@ const determinarFlujo = async (numero, mensaje, name = "Cliente") => {
     const mostrarMenu = async () => {
       return await metaService.enviarBotones(
         numero,
-        `Hola ${name} 👋 Bienvenido a *FLYHOUSE* 🏡\n\nSelecciona una opción:`
+        `Hola ${name} 👋 Bienvenido a *COORPORACION FLYHOUSE SAC* 🏡\n\nSelecciona una opción:`
       );
     };
 
@@ -56,7 +56,7 @@ const determinarFlujo = async (numero, mensaje, name = "Cliente") => {
       case texto.includes("gracias"):
         return await metaService.enviarMensajeTexto(
           numero,
-          "😊 De nada, estoy aquí para ayudarte."
+          "😊 De nada, estoy aquí para ayudarte.GRACIAS POR CONFIAR EN FLYHOUSE ."
         );
 
       /* ===== SALUDO ===== */
