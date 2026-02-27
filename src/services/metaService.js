@@ -7,83 +7,79 @@ const HEADERS = {
   "Content-Type": "application/json"
 };
 
-/* =========================
-   ENVIAR MENSAJE DE TEXTO
-========================= */
 const enviarMensajeTexto = async (numero, texto) => {
-  try {
-    await axios.post(
-      URL,
-      {
-        messaging_product: "whatsapp",
-        to: numero,
-        type: "text",
-        text: { body: texto }
-      },
-      { headers: HEADERS }
-    );
-
-    console.log("✅ Texto enviado");
-  } catch (error) {
-    console.error("❌ Error enviando texto:", error.response?.data || error.message);
-  }
+  await axios.post(
+    URL,
+    {
+      messaging_product: "whatsapp",
+      to: numero,
+      type: "text",
+      text: { body: texto }
+    },
+    { headers: HEADERS }
+  );
 };
 
-
-/* =========================
-   ENVIAR PDF (DOCUMENTO)
-========================= */
 const enviarMensajePDF = async (numero, urlPdf, nombreArchivo) => {
-  try {
-    await axios.post(
-      URL,
-      {
-        messaging_product: "whatsapp",
-        to: numero,
-        type: "document",
-        document: {
-          link: urlPdf,
-          filename: nombreArchivo
-        }
-      },
-      { headers: HEADERS }
-    );
-
-    console.log("✅ PDF enviado correctamente");
-  } catch (error) {
-    console.error("❌ Error enviando PDF:", error.response?.data || error.message);
-  }
+  await axios.post(
+    URL,
+    {
+      messaging_product: "whatsapp",
+      to: numero,
+      type: "document",
+      document: {
+        link: urlPdf,
+        filename: nombreArchivo
+      }
+    },
+    { headers: HEADERS }
+  );
 };
 
-
-/* =========================
-   ENVIAR IMAGEN
-========================= */
 const enviarMensajeImagen = async (numero, imageUrl, caption = "") => {
-  try {
-    await axios.post(
-      URL,
-      {
-        messaging_product: "whatsapp",
-        to: numero,
-        type: "image",
-        image: {
-          link: imageUrl,
-          caption: caption
-        }
-      },
-      { headers: HEADERS }
-    );
-
-    console.log("✅ Imagen enviada correctamente");
-  } catch (error) {
-    console.error("❌ Error enviando imagen:", error.response?.data || error.message);
-  }
+  await axios.post(
+    URL,
+    {
+      messaging_product: "whatsapp",
+      to: numero,
+      type: "image",
+      image: {
+        link: imageUrl,
+        caption: caption
+      }
+    },
+    { headers: HEADERS }
+  );
 };
 
+const enviarBotones = async (numero, cuerpoTexto, botones) => {
+  await axios.post(
+    URL,
+    {
+      messaging_product: "whatsapp",
+      to: numero,
+      type: "interactive",
+      interactive: {
+        type: "button",
+        body: { text: cuerpoTexto },
+        action: {
+          buttons: botones.map((btn) => ({
+            type: "reply",
+            reply: {
+              id: btn.id,
+              title: btn.title
+            }
+          }))
+        }
+      }
+    },
+    { headers: HEADERS }
+  );
+};
 
 module.exports = {
   enviarMensajeTexto,
   enviarMensajePDF,
-  enviarMensajeImagen
+  enviarMensajeImagen,
+  enviarBotones
 };
