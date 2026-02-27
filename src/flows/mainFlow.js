@@ -15,7 +15,7 @@ const determinarFlujo = async (numero, mensajeRecibido, name = "Cliente") => {
       "https://drive.google.com/uc?export=download&id=1HBRYma72_lk4iITQGsKrW17e_RxDmTeq";
 
     const mensajeBienvenida = `¡Hola ${name}! 👋  
-Bienvenido a *FLYHOUSE* 🏡  
+Bienvenido a *COORPORACION FLYHOUSE SAC* 🏡  
 
 Te puedo ayudar con:
 
