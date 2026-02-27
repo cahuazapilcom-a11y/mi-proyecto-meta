@@ -43,7 +43,7 @@ const determinarFlujo = async (numero, mensaje, name = "Cliente") => {
     const mostrarMenu = async () => {
       return await metaService.enviarBotones(
         numero,
-        `Hola ${name} 👋 Bienvenido a *COORPORACION FLYHOUSE SAC* 🏡\n\nSelecciona una opción:`
+        `Hola ${name} 👋 Bienvenido a *COORPORACION FLYHOUSE SAC.Tu consulta en linea.* 🏡\n\nSelecciona una opción:`
       );
     };
 
