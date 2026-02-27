@@ -1,94 +1,107 @@
 const axios = require("axios");
 
-const URL = `https://graph.facebook.com/${process.env.META_VERSION}/${process.env.META_PHONE_ID}/messages`;
+/* =========================
+   VALIDACIÓN DE ENTORNO
+========================= */
+const {
+  META_VERSION,
+  META_PHONE_ID,
+  META_TOKEN
+} = process.env;
 
-const HEADERS = {
-  Authorization: `Bearer ${process.env.META_TOKEN}`,
-  "Content-Type": "application/json"
+if (!META_VERSION || !META_PHONE_ID || !META_TOKEN) {
+  throw new Error("❌ Faltan variables de entorno META_VERSION, META_PHONE_ID o META_TOKEN");
+}
+
+const URL = `https://graph.facebook.com/${META_VERSION}/${META_PHONE_ID}/messages`;
+
+const axiosInstance = axios.create({
+  baseURL: URL,
+  timeout: 10000, // 10 segundos
+  headers: {
+    Authorization: `Bearer ${META_TOKEN}`,
+    "Content-Type": "application/json"
+  }
+});
+
+/* =========================
+   FUNCIÓN BASE REUTILIZABLE
+========================= */
+const enviarPeticion = async (payload) => {
+  try {
+    const response = await axiosInstance.post("", payload);
+    return response.data;
+  } catch (error) {
+    const errorData = error.response?.data || error.message;
+    console.error("❌ Error WhatsApp API:", JSON.stringify(errorData, null, 2));
+    throw errorData;
+  }
 };
 
 /* =========================
    TEXTO
 ========================= */
 const enviarMensajeTexto = async (numero, texto) => {
-  try {
-    await axios.post(
-      URL,
-      {
-        messaging_product: "whatsapp",
-        to: numero,
-        type: "text",
-        text: { body: texto }
-      },
-      { headers: HEADERS }
-    );
-  } catch (error) {
-    console.error("❌ Error texto:", error.response?.data || error.message);
-  }
+  if (!numero || !texto) return;
+
+  return await enviarPeticion({
+    messaging_product: "whatsapp",
+    to: numero,
+    type: "text",
+    text: { body: texto }
+  });
 };
 
 /* =========================
    PDF
 ========================= */
-const enviarMensajePDF = async (numero, urlPdf, nombreArchivo) => {
-  try {
-    await axios.post(
-      URL,
-      {
-        messaging_product: "whatsapp",
-        to: numero,
-        type: "document",
-        document: {
-          link: urlPdf,
-          filename: nombreArchivo
-        }
-      },
-      { headers: HEADERS }
-    );
-  } catch (error) {
-    console.error("❌ Error PDF:", error.response?.data || error.message);
-  }
+const enviarMensajePDF = async (numero, urlPdf, nombreArchivo = "documento.pdf") => {
+  if (!numero || !urlPdf) return;
+
+  return await enviarPeticion({
+    messaging_product: "whatsapp",
+    to: numero,
+    type: "document",
+    document: {
+      link: urlPdf,
+      filename: nombreArchivo
+    }
+  });
 };
 
 /* =========================
    BOTONES
 ========================= */
 const enviarBotones = async (numero, cuerpoTexto) => {
-  try {
-    await axios.post(
-      URL,
-      {
-        messaging_product: "whatsapp",
-        to: numero,
-        type: "interactive",
-        interactive: {
-          type: "button",
-          body: {
-            text: cuerpoTexto
-          },
-          action: {
-            buttons: [
-              {
-                type: "reply",
-                reply: { id: "HORARIO", title: "Horarios" }
-              },
-              {
-                type: "reply",
-                reply: { id: "UBICACION", title: "Ubicacion" }
-              },
-              {
-                type: "reply",
-                reply: { id: "ASESOR", title: "Asesor" }
-              }
-            ]
-          }
-        }
+  if (!numero || !cuerpoTexto) return;
+
+  return await enviarPeticion({
+    messaging_product: "whatsapp",
+    to: numero,
+    type: "interactive",
+    interactive: {
+      type: "button",
+      body: {
+        text: cuerpoTexto
       },
-      { headers: HEADERS }
-    );
-  } catch (error) {
-    console.error("❌ Error botones:", error.response?.data || error.message);
-  }
+      action: {
+        buttons: [
+          {
+            type: "reply",
+            reply: { id: "HORARIO", title: "Horarios" }
+          },
+          {
+            type: "reply",
+            reply: { id: "UBICACION", title: "Ubicación" }
+          },
+          {
+            type: "reply",
+            reply: { id: "ASESOR", title: "Asesor" }
+          }
+        ]
+      }
+    }
+  });
 };
 
 /* =========================
