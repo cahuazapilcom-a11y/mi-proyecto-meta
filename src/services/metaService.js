@@ -1,47 +1,89 @@
-const axios = require('axios');
+const axios = require("axios");
 
+const URL = `https://graph.facebook.com/${process.env.META_VERSION}/${process.env.META_PHONE_ID}/messages`;
+
+const HEADERS = {
+  Authorization: `Bearer ${process.env.META_TOKEN}`,
+  "Content-Type": "application/json"
+};
+
+/* =========================
+   ENVIAR MENSAJE DE TEXTO
+========================= */
 const enviarMensajeTexto = async (numero, texto) => {
-    try {
-        const data = {
-            messaging_product: "whatsapp",
-            to: numero,
-            type: "text",
-            text: { body: texto }
-        };
+  try {
+    await axios.post(
+      URL,
+      {
+        messaging_product: "whatsapp",
+        to: numero,
+        type: "text",
+        text: { body: texto }
+      },
+      { headers: HEADERS }
+    );
 
-        await axios.post(
-            `https://graph.facebook.com/${process.env.META_VERSION}/${process.env.META_PHONE_ID}/messages`,
-            data,
-            { headers: { Authorization: `Bearer ${process.env.META_TOKEN}` } }
-        );
-    } catch (error) {
-        console.error("❌ Error enviando texto:", error.response?.data || error.message);
-    }
+    console.log("✅ Texto enviado");
+  } catch (error) {
+    console.error("❌ Error enviando texto:", error.response?.data || error.message);
+  }
 };
 
-// ESTA ES LA FUNCIÓN QUE TE FALTABA
+
+/* =========================
+   ENVIAR PDF (DOCUMENTO)
+========================= */
 const enviarMensajePDF = async (numero, urlPdf, nombreArchivo) => {
-    try {
-        const data = {
-            messaging_product: "whatsapp",
-            to: numero,
-            type: "document",
-            document: {
-                link: urlPdf,
-                filename: nombreArchivo
-            }
-        };
+  try {
+    await axios.post(
+      URL,
+      {
+        messaging_product: "whatsapp",
+        to: numero,
+        type: "document",
+        document: {
+          link: urlPdf,
+          filename: nombreArchivo
+        }
+      },
+      { headers: HEADERS }
+    );
 
-        await axios.post(
-            `https://graph.facebook.com/${process.env.META_VERSION}/${process.env.META_PHONE_ID}/messages`,
-            data,
-            { headers: { Authorization: `Bearer ${process.env.META_TOKEN}` } }
-        );
-        console.log("📄 PDF enviado con éxito");
-    } catch (error) {
-        console.error("❌ Error enviando PDF:", error.response?.data || error.message);
-    }
+    console.log("✅ PDF enviado correctamente");
+  } catch (error) {
+    console.error("❌ Error enviando PDF:", error.response?.data || error.message);
+  }
 };
 
-// IMPORTANTE: Exportar ambas funciones
-module.exports = { enviarMensajeTexto, enviarMensajePDF,enviarMensajeImagen };
+
+/* =========================
+   ENVIAR IMAGEN
+========================= */
+const enviarMensajeImagen = async (numero, imageUrl, caption = "") => {
+  try {
+    await axios.post(
+      URL,
+      {
+        messaging_product: "whatsapp",
+        to: numero,
+        type: "image",
+        image: {
+          link: imageUrl,
+          caption: caption
+        }
+      },
+      { headers: HEADERS }
+    );
+
+    console.log("✅ Imagen enviada correctamente");
+  } catch (error) {
+    console.error("❌ Error enviando imagen:", error.response?.data || error.message);
+  }
+};
+
+
+module.exports = {
+  enviarMensajeTexto,
+  enviarMensajePDF,
+  enviarMensajeImagen
+};
