@@ -1,121 +1,106 @@
 const metaService = require("../services/metaService");
 
-const determinarFlujo = async (numero, mensajeRecibido, name = "Cliente") => {
+/* ==============================
+   NORMALIZAR TEXTO
+============================== */
+const normalizarTexto = (texto = "") => {
+  return texto
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
+
+/* ==============================
+   FLUJO PRINCIPAL
+============================== */
+const determinarFlujo = async (numero, mensaje, name = "Cliente") => {
   try {
 
-    // 🔎 Normalizar texto
-    const texto = mensajeRecibido
-      ?.toLowerCase()
-      .trim()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
+    if (!numero) return;
+
+    /* ==================================
+       DETECTAR SI ES BOTÓN O TEXTO
+    ================================== */
+    let texto = "";
+
+    if (mensaje?.text?.body) {
+      texto = normalizarTexto(mensaje.text.body);
+    }
+
+    if (mensaje?.interactive?.button_reply?.id) {
+      texto = normalizarTexto(mensaje.interactive.button_reply.id);
+    }
+
+    if (!texto) return;
 
     const urlRequisitos =
       "https://drive.google.com/uc?export=download&id=1HBRYma72_lk4iITQGsKrW17e_RxDmTeq";
 
-    /* ==============================
-       MENÚ CON BOTONES
-    ============================== */
+    /* ==================================
+       MENÚ
+    ================================== */
     const mostrarMenu = async () => {
-      await metaService.enviarBotones(
+      return await metaService.enviarBotones(
         numero,
-        `Hola ${name} 👋 Bienvenido a *FLYHOUSE* 🏡\n\nSelecciona una opción:`,
-        [
-          { id: "HORARIO", title: "🕒 Horarios" },
-          { id: "UBICACION", title: "📍 Ubicación" },
-          { id: "ASESOR", title: "👨‍💼 Asesor" }
-        ]
+        `Hola ${name} 👋 Bienvenido a *FLYHOUSE* 🏡\n\nSelecciona una opción:`
       );
     };
 
-    /* ==============================
-       RESPUESTA A "GRACIAS"
-    ============================== */
-    if (
-      texto.includes("gracias") ||
-      texto.includes("muchas gracias") ||
-      texto.includes("ok gracias")
-    ) {
-      return await metaService.enviarMensajeTexto(
-        numero,
-        "😊 De nada, estoy aquí para ayudarte."
-      );
+    /* ==================================
+       RESPUESTAS
+    ================================== */
+    switch (true) {
+
+      /* ===== GRACIAS ===== */
+      case texto.includes("gracias"):
+        return await metaService.enviarMensajeTexto(
+          numero,
+          "😊 De nada, estoy aquí para ayudarte."
+        );
+
+      /* ===== SALUDO ===== */
+      case ["hola", "menu", "inicio"].includes(texto):
+        return await mostrarMenu();
+
+      /* ===== HORARIO ===== */
+      case ["horario", "horarios", "1"].includes(texto):
+        return await metaService.enviarMensajeTexto(
+          numero,
+          "🕒 Nuestro horario:\n\nLunes a Viernes\n8:00 AM - 1:00 PM\n3:00 PM - 7:00 PM"
+        );
+
+      /* ===== UBICACIÓN ===== */
+      case ["ubicacion", "2"].includes(texto):
+        return await metaService.enviarMensajeTexto(
+          numero,
+          "📍 Estamos en:\nTeniente Secada 400\nYurimaguas - Perú 🇵🇪"
+        );
+
+      /* ===== ASESOR ===== */
+      case ["asesor", "3"].includes(texto):
+        return await metaService.enviarMensajeTexto(
+          numero,
+          `✅ ${name}, un asesor te contactará en breve.`
+        );
+
+      /* ===== REQUISITOS ===== */
+      case ["requisito", "requisitos", "4"].includes(texto):
+        await metaService.enviarMensajeTexto(
+          numero,
+          "📄 Te envío los requisitos..."
+        );
+
+        return await metaService.enviarMensajePDF(
+          numero,
+          urlRequisitos,
+          "Requisitos_Techo_Propio.pdf"
+        );
+
+      /* ===== DEFAULT ===== */
+      default:
+        return await mostrarMenu();
     }
-
-    /* ==============================
-       SALUDO
-    ============================== */
-    if (texto === "hola" || texto === "menu" || texto === "inicio") {
-      return await mostrarMenu();
-    }
-
-    /* ==============================
-       HORARIO
-    ============================== */
-    if (
-      texto === "horario" ||
-      texto === "horarios" ||
-      texto === "1" ||
-      texto === "HORARIO"
-    ) {
-      return await metaService.enviarMensajeTexto(
-        numero,
-        "🕒 Nuestro horario:\n\nLunes a Viernes\n8:00 AM - 1:00 PM\n3:00 PM - 7:00 PM"
-      );
-    }
-
-    /* ==============================
-       UBICACIÓN
-    ============================== */
-    if (
-      texto === "ubicacion" ||
-      texto === "2" ||
-      texto === "UBICACION"
-    ) {
-      return await metaService.enviarMensajeTexto(
-        numero,
-        "📍 Estamos en:\nTeniente Secada 400\nYurimaguas - Perú 🇵🇪"
-      );
-    }
-
-    /* ==============================
-       ASESOR
-    ============================== */
-    if (
-      texto === "asesor" ||
-      texto === "3" ||
-      texto === "ASESOR"
-    ) {
-      return await metaService.enviarMensajeTexto(
-        numero,
-        `✅ ${name}, un asesor te contactará en breve.`
-      );
-    }
-
-    /* ==============================
-       REQUISITOS
-    ============================== */
-    if (
-      texto === "requisito" ||
-      texto === "requisitos" ||
-      texto === "4"
-    ) {
-      await metaService.enviarMensajeTexto(
-        numero,
-        "📄 Te envío los requisitos..."
-      );
-
-      return await metaService.enviarMensajePDF(
-        numero,
-        urlRequisitos,
-        "Requisitos_Techo_Propio.pdf"
-      );
-    }
-
-    /* ==============================
-       SI NO ENTIENDE
-    ============================== */
-    await mostrarMenu();
 
   } catch (error) {
     console.error("❌ Error en flujo:", error);
