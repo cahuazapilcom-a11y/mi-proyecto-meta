@@ -1,44 +1,89 @@
+const axios = require("axios");
+
+const URL = `https://graph.facebook.com/${process.env.META_VERSION}/${process.env.META_PHONE_ID}/messages`;
+
+const HEADERS = {
+  Authorization: `Bearer ${process.env.META_TOKEN}`,
+  "Content-Type": "application/json"
+};
+
 /* =========================
-   ENVIAR BOTONES INTERACTIVOS
+   ENVIAR MENSAJE DE TEXTO
 ========================= */
-const enviarBotones = async (numero, cuerpoTexto, botones) => {
+const enviarMensajeTexto = async (numero, texto) => {
   try {
     await axios.post(
       URL,
       {
         messaging_product: "whatsapp",
         to: numero,
-        type: "interactive",
-        interactive: {
-          type: "button",
-          body: {
-            text: cuerpoTexto
-          },
-          action: {
-            buttons: botones.map((btn) => ({
-              type: "reply",
-              reply: {
-                id: btn.id,
-                title: btn.title
-              }
-            }))
-          }
+        type: "text",
+        text: { body: texto }
+      },
+      { headers: HEADERS }
+    );
+
+    console.log("✅ Texto enviado");
+  } catch (error) {
+    console.error("❌ Error enviando texto:", error.response?.data || error.message);
+  }
+};
+
+
+/* =========================
+   ENVIAR PDF (DOCUMENTO)
+========================= */
+const enviarMensajePDF = async (numero, urlPdf, nombreArchivo) => {
+  try {
+    await axios.post(
+      URL,
+      {
+        messaging_product: "whatsapp",
+        to: numero,
+        type: "document",
+        document: {
+          link: urlPdf,
+          filename: nombreArchivo
         }
       },
       { headers: HEADERS }
     );
 
-    console.log("✅ Botones enviados");
+    console.log("✅ PDF enviado correctamente");
   } catch (error) {
-    console.error("❌ Error enviando botones:", error.response?.data || error.message);
+    console.error("❌ Error enviando PDF:", error.response?.data || error.message);
   }
 };
+
+
+/* =========================
+   ENVIAR IMAGEN
+========================= */
+const enviarMensajeImagen = async (numero, imageUrl, caption = "") => {
+  try {
+    await axios.post(
+      URL,
+      {
+        messaging_product: "whatsapp",
+        to: numero,
+        type: "image",
+        image: {
+          link: imageUrl,
+          caption: caption
+        }
+      },
+      { headers: HEADERS }
+    );
+
+    console.log("✅ Imagen enviada correctamente");
+  } catch (error) {
+    console.error("❌ Error enviando imagen:", error.response?.data || error.message);
+  }
+};
+
 
 module.exports = {
   enviarMensajeTexto,
   enviarMensajePDF,
-  enviarMensajeImagen,
-  enviarBotones
+  enviarMensajeImagen
 };
-
-
