@@ -8,7 +8,7 @@ const HEADERS = {
 };
 
 /* =========================
-   ENVIAR MENSAJE DE TEXTO
+   TEXTO
 ========================= */
 const enviarMensajeTexto = async (numero, texto) => {
   try {
@@ -22,16 +22,13 @@ const enviarMensajeTexto = async (numero, texto) => {
       },
       { headers: HEADERS }
     );
-
-    console.log("✅ Texto enviado");
   } catch (error) {
-    console.error("❌ Error enviando texto:", error.response?.data || error.message);
+    console.error("❌ Error texto:", error.response?.data || error.message);
   }
 };
 
-
 /* =========================
-   ENVIAR PDF (DOCUMENTO)
+   PDF
 ========================= */
 const enviarMensajePDF = async (numero, urlPdf, nombreArchivo) => {
   try {
@@ -48,42 +45,57 @@ const enviarMensajePDF = async (numero, urlPdf, nombreArchivo) => {
       },
       { headers: HEADERS }
     );
-
-    console.log("✅ PDF enviado correctamente");
   } catch (error) {
-    console.error("❌ Error enviando PDF:", error.response?.data || error.message);
+    console.error("❌ Error PDF:", error.response?.data || error.message);
   }
 };
 
-
 /* =========================
-   ENVIAR IMAGEN
+   BOTONES
 ========================= */
-const enviarMensajeImagen = async (numero, imageUrl, caption = "") => {
+const enviarBotones = async (numero, cuerpoTexto) => {
   try {
     await axios.post(
       URL,
       {
         messaging_product: "whatsapp",
         to: numero,
-        type: "image",
-        image: {
-          link: imageUrl,
-          caption: caption
+        type: "interactive",
+        interactive: {
+          type: "button",
+          body: {
+            text: cuerpoTexto
+          },
+          action: {
+            buttons: [
+              {
+                type: "reply",
+                reply: { id: "HORARIO", title: "Horarios" }
+              },
+              {
+                type: "reply",
+                reply: { id: "UBICACION", title: "Ubicacion" }
+              },
+              {
+                type: "reply",
+                reply: { id: "ASESOR", title: "Asesor" }
+              }
+            ]
+          }
         }
       },
       { headers: HEADERS }
     );
-
-    console.log("✅ Imagen enviada correctamente");
   } catch (error) {
-    console.error("❌ Error enviando imagen:", error.response?.data || error.message);
+    console.error("❌ Error botones:", error.response?.data || error.message);
   }
 };
 
-
+/* =========================
+   EXPORTAR
+========================= */
 module.exports = {
   enviarMensajeTexto,
   enviarMensajePDF,
-  enviarMensajeImagen
+  enviarBotones
 };
