@@ -9,6 +9,13 @@ app.use(express.json());
 ========================================= */
 const mensajesProcesados = new Set();
 
+/* Limpieza automática cada 5 minutos
+   (evita que el Set crezca infinito) */
+setInterval(() => {
+  mensajesProcesados.clear();
+  console.log("🧹 Limpieza de mensajes procesados");
+}, 5 * 60 * 1000);
+
 /* =========================================
    VERIFICACIÓN WEBHOOK (GET)
 ========================================= */
@@ -32,19 +39,18 @@ app.post("/webhook", async (req, res) => {
   try {
     const body = req.body;
 
-    // ⚠️ Responder inmediatamente a Meta (evita reintentos)
+    // ⚡ RESPONDER INMEDIATAMENTE A META
     res.status(200).send("EVENT_RECEIVED");
 
     const entry = body?.entry?.[0];
     const change = entry?.changes?.[0];
     const value = change?.value;
 
-    // 🔴 Ignorar si no es evento de mensaje
     if (!value?.messages) return;
 
     const mensajeObj = value.messages[0];
 
-    // 🔴 Evitar procesar el mismo mensaje 2 veces
+    // 🔴 Evitar duplicados
     if (mensajesProcesados.has(mensajeObj.id)) {
       console.log("⚠️ Mensaje duplicado ignorado:", mensajeObj.id);
       return;
@@ -54,11 +60,11 @@ app.post("/webhook", async (req, res) => {
 
     const numeroUsuario = mensajeObj.from;
     const contact = value?.contacts?.[0];
-    const name = contact?.profile?.name || "amigo(a)";
+    const name = contact?.profile?.name || "Cliente";
 
-    console.log(`📩 Mensaje de ${name}`);
+    console.log(`📩 Mensaje recibido de ${name} (${numeroUsuario})`);
 
-    // 🔥 Ahora enviamos el OBJETO COMPLETO al flujo (no solo texto)
+    // 🔥 Aquí se ejecuta tu flujo (incluye agendado + Google Sheets)
     await determinarFlujo(numeroUsuario, mensajeObj, name);
 
   } catch (error) {
@@ -70,6 +76,7 @@ app.post("/webhook", async (req, res) => {
    INICIAR SERVIDOR
 ========================================= */
 const PORT = process.env.PORT || 10000;
+
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor en puerto ${PORT}`);
+  console.log(`🚀 Servidor activo en puerto ${PORT}`);
 });

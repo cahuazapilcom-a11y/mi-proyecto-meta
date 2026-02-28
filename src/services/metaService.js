@@ -17,7 +17,7 @@ const URL = `https://graph.facebook.com/${META_VERSION}/${META_PHONE_ID}/message
 
 const axiosInstance = axios.create({
   baseURL: URL,
-  timeout: 10000, // 10 segundos
+  timeout: 10000,
   headers: {
     Authorization: `Bearer ${META_TOKEN}`,
     "Content-Type": "application/json"
@@ -25,7 +25,7 @@ const axiosInstance = axios.create({
 });
 
 /* =========================
-   FUNCIÓN BASE REUTILIZABLE
+   FUNCIÓN BASE
 ========================= */
 const enviarPeticion = async (payload) => {
   try {
@@ -70,7 +70,7 @@ const enviarMensajePDF = async (numero, urlPdf, nombreArchivo = "documento.pdf")
 };
 
 /* =========================
-   BOTONES
+   BOTONES (ACTUALIZADO)
 ========================= */
 const enviarBotones = async (numero, cuerpoTexto) => {
   if (!numero || !cuerpoTexto) return;
@@ -97,6 +97,10 @@ const enviarBotones = async (numero, cuerpoTexto) => {
           {
             type: "reply",
             reply: { id: "ASESOR", title: "Asesor" }
+          },
+          {
+            type: "reply",
+            reply: { id: "CITA", title: "Agendar Cita" }
           }
         ]
       }

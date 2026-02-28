@@ -1,8 +1,8 @@
 const metaService = require("../services/metaService");
+const { guardarCita } = require("../services/sheetsService");
 
-/* ==============================
-   NORMALIZAR TEXTO
-============================== */
+const sesiones = {}; // memoria temporal simple
+
 const normalizarTexto = (texto = "") => {
   return texto
     .toLowerCase()
@@ -11,17 +11,10 @@ const normalizarTexto = (texto = "") => {
     .replace(/[\u0300-\u036f]/g, "");
 };
 
-/* ==============================
-   FLUJO PRINCIPAL
-============================== */
 const determinarFlujo = async (numero, mensaje, name = "Cliente") => {
   try {
-
     if (!numero) return;
 
-    /* ==================================
-       DETECTAR SI ES BOTÓN O TEXTO
-    ================================== */
     let texto = "";
 
     if (mensaje?.text?.body) {
@@ -34,70 +27,81 @@ const determinarFlujo = async (numero, mensaje, name = "Cliente") => {
 
     if (!texto) return;
 
-    const urlRequisitos =
-      "https://drive.google.com/uc?export=download&id=1HBRYma72_lk4iITQGsKrW17e_RxDmTeq";
-
-    /* ==================================
-       MENÚ
-    ================================== */
     const mostrarMenu = async () => {
       return await metaService.enviarBotones(
         numero,
-        `Hola ${name} 👋 Bienvenido a *COORPORACION FLYHOUSE SAC.Tu consulta en linea.* 🏡\n\nSelecciona una opción:`
+        `Hola ${name} 👋 Bienvenido a *COORPORACION FLYHOUSE SAC.* 🏡\n\nSelecciona una opción:\n\n1️⃣ Horario\n2️⃣ Ubicación\n3️⃣ Asesor\n4️⃣ Requisitos\n5️⃣ Agendar Cita`
       );
     };
 
-    /* ==================================
-       RESPUESTAS
-    ================================== */
+    /* ============================
+       SI ESTÁ EN PROCESO DE CITA
+    ============================ */
+
+    if (sesiones[numero]?.estado === "esperando_datos") {
+
+      const fecha = new Date().toLocaleString("es-PE");
+
+      await guardarCita({
+        fecha,
+        telefono: numero,
+        nombre: name,
+        mensaje: mensaje.text?.body || "Sin mensaje"
+      });
+
+      delete sesiones[numero];
+
+      return await metaService.enviarMensajeTexto(
+        numero,
+        "✅ Tu cita fue agendada correctamente. Un asesor te contactará pronto."
+      );
+    }
+
     switch (true) {
 
-      /* ===== GRACIAS ===== */
       case texto.includes("gracias"):
         return await metaService.enviarMensajeTexto(
           numero,
-          "😊 De nada, estoy aquí para ayudarte.GRACIAS POR CONFIAR EN FLYHOUSE ."
+          "😊 De nada, gracias por confiar en FLYHOUSE."
         );
 
-      /* ===== SALUDO ===== */
       case ["hola", "menu", "inicio"].includes(texto):
         return await mostrarMenu();
 
-      /* ===== HORARIO ===== */
-      case ["horario", "horarios", "1"].includes(texto):
+      case ["horario", "1"].includes(texto):
         return await metaService.enviarMensajeTexto(
           numero,
-          "🕒 Nuestro horario:\n\nLunes a Viernes\n8:00 AM - 1:00 PM\n3:00 PM - 7:00 PM"
+          "🕒 Lunes a Viernes\n8:00 AM - 1:00 PM\n3:00 PM - 7:00 PM"
         );
 
-      /* ===== UBICACIÓN ===== */
       case ["ubicacion", "2"].includes(texto):
         return await metaService.enviarMensajeTexto(
           numero,
-          "📍 Estamos en:\nTeniente Secada 400\nYurimaguas - Perú 🇵🇪"
+          "📍 Teniente Secada 400\nYurimaguas - Perú 🇵🇪"
         );
 
-      /* ===== ASESOR ===== */
       case ["asesor", "3"].includes(texto):
         return await metaService.enviarMensajeTexto(
           numero,
           `✅ ${name}, un asesor te contactará en breve.`
         );
 
-      /* ===== REQUISITOS ===== */
-      case ["requisito", "requisitos", "4"].includes(texto):
-        await metaService.enviarMensajeTexto(
+      case ["requisitos", "4"].includes(texto):
+        return await metaService.enviarMensajeTexto(
           numero,
           "📄 Te envío los requisitos..."
         );
 
-        return await metaService.enviarMensajePDF(
+      /* ===== AGENDAR CITA ===== */
+      case ["5", "cita", "agendar"].includes(texto):
+
+        sesiones[numero] = { estado: "esperando_datos" };
+
+        return await metaService.enviarMensajeTexto(
           numero,
-          urlRequisitos,
-          "Requisitos_Techo_Propio.pdf"
+          "📝 Por favor escribe el motivo de tu cita o información adicional."
         );
 
-      /* ===== DEFAULT ===== */
       default:
         return await mostrarMenu();
     }
