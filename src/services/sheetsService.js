@@ -20,7 +20,7 @@ async function agregarFila(datos = []) {
     // Asegúrate de que el SPREADSHEET_ID sea el correcto
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: "Hoja1!A:D", // <--- IMPORTANTE: Verifica el nombre de la pestaña
+      range: "Hoja1", // <--- IMPORTANTE: Verifica el nombre de la pestaña
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [datos],
