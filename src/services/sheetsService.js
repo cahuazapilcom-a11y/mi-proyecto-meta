@@ -24,7 +24,7 @@ async function agregarFila(datos = []) {
   try {
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: "Hoja1!A1",
+      range: "Hoja1",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [datos],
