@@ -1,19 +1,14 @@
 const { google } = require("googleapis");
 
-if (!process.env.GOOGLE_SERVICE_ACCOUNT) {
-  throw new Error("❌ GOOGLE_SERVICE_ACCOUNT no está definida en Render");
-}
-
-if (!process.env.SPREADSHEET_ID) {
-  throw new Error("❌ SPREADSHEET_ID no está definido");
-}
-
-const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+// 1. Limpiamos la llave directamente desde la variable de entorno
+const privateKey = process.env.GOOGLE_PRIVATE_KEY 
+    ? process.env.GOOGLE_PRIVATE_KEY.split(String.raw`\n`).join('\n') 
+    : null;
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
-    ...serviceAccount,
-    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: privateKey,
   },
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
@@ -22,18 +17,19 @@ const sheets = google.sheets({ version: "v4", auth });
 
 async function agregarFila(datos = []) {
   try {
+    // Asegúrate de que el SPREADSHEET_ID sea el correcto
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: "reservasHoja1",
+      range: "Hoja1!A:D", // <--- IMPORTANTE: Verifica el nombre de la pestaña
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [datos],
       },
     });
-
     console.log("✅ Guardado en Sheets");
   } catch (error) {
-    console.error("❌ Error Sheets:", error.message);
+    // Esto te dará más detalles si vuelve a fallar
+    console.error("❌ Error Sheets:", error.response ? error.response.data : error.message);
     throw error;
   }
 }
