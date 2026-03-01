@@ -16,7 +16,7 @@ async function guardarCita({ fecha, telefono, nombre, mensaje }) {
     
     await sheets.spreadsheets.values.append({
         spreadsheetId: SPREADSHEET_ID,
-        range: 'Hoja1!A1', // Verifica que tu hoja se llame Hoja1
+        range: 'Hoja1', // Verifica que tu hoja se llame Hoja1
         valueInputOption: 'USER_ENTERED',
         resource: {
             values: [[fecha, telefono, nombre, mensaje]]
