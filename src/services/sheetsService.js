@@ -1,31 +1,40 @@
 const { google } = require("googleapis");
 
+if (!process.env.GOOGLE_SERVICE_ACCOUNT) {
+  throw new Error("❌ GOOGLE_SERVICE_ACCOUNT no está definida en Render");
+}
+
+if (!process.env.SPREADSHEET_ID) {
+  throw new Error("❌ SPREADSHEET_ID no está definido");
+}
+
+const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+
 const auth = new google.auth.GoogleAuth({
   credentials: {
-    ...JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT),
-    private_key: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT).private_key.replace(/\\n/g, "\n"),
+    ...serviceAccount,
+    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),
   },
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
 const sheets = google.sheets({ version: "v4", auth });
 
-const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
-
 async function agregarFila(datos = []) {
   try {
     await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID,
-      range: "Hoja1",
+      spreadsheetId: process.env.SPREADSHEET_ID,
+      range: "Hoja1!A1",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [datos],
       },
     });
 
-    console.log("✅ Datos guardados en Google Sheets");
+    console.log("✅ Guardado en Sheets");
   } catch (error) {
     console.error("❌ Error Sheets:", error.message);
+    throw error;
   }
 }
 
