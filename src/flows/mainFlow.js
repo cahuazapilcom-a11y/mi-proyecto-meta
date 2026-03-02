@@ -41,7 +41,7 @@ const guardarEnSheets = async (datos) => {
   try {
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: "Hoja1!A:D",
+      range: "Hoja1",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [[
