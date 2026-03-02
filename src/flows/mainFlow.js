@@ -1,95 +1,77 @@
-const metaService = require("../services/metaService");
-const { google } = require("googleapis");
+const { addKeyword, EVENTS } = require('@bot-whatsapp/bot');
+const { guardarCita } = require('../services/sheetsService');
 
-const sesiones = {};
+const mainFlow = addKeyword(['hola', 'buenas', 'info', 'inicio', 'menu'])  
+  .addAnswer(
+    null,
+    null,
+    async (ctx, { flowDynamic }) => {
 
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n")
-  },
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"]
-});
+      const name =
+        ctx.pushName ||
+        ctx.message?.profile?.name ||
+        ctx.from;
 
-const sheets = google.sheets({ version: "v4", auth });
-
-const guardarEnSheets = async (datos) => {
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: process.env.SPREADSHEET_ID,
-    range: "Hoja1!A:D",
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [[
-        new Date().toLocaleString(),
-        datos.nombre,
-        datos.fecha,
-        datos.telefono
-      ]]
+      await flowDynamic(
+        `Hola ${name} 👋 bienvenido a *FLYHOUSE*, tu consulta en línea.\n\n` +
+        `Selecciona una opción:\n\n` +
+        `1️⃣ Ubicación\n` +
+        `2️⃣ Agendar cita\n` +
+        `3️⃣ Asesor`
+      );
     }
-  });
-};
+  )
+    // --- FLUJO: UBICACIÓN ---
+    .addAnswer(
+  ['1', 'ubicacion', 'Ubicación'],
+         null,
+     async (ctx, { flowDynamic }) => {
+      await flowDynamic("📍 Nos encontramos en: [TU DIRECCIÓN AQUÍ]");
+      await flowDynamic("Aquí tienes nuestra ubicación en Google Maps: https://maps.app.goo.gl/D1o8jzQHbe3JPr2KA?g_st=iw");
+       }
+    )
+    // --- FLUJO: ASESOR ---
+    .addAnswer(
+         ['3', 'asesor', 'Asesor'],
+         null,
+         async (ctx, { flowDynamic }) => {
+          await flowDynamic("En un momento un asesor de *FLYHOUSE* se pondrá en contacto contigo. 🤝");
+         }
+        )
+    // --- FLUJO: AGENDAR CITA (COMIENZA EL REGISTRO) ---
+    .addAnswer(
+        ['2', 'agendar cita', 'Agendar cita'],
+         { capture: true },
+         async (ctx, { flowDynamic, state }) => {
 
-const determinarFlujo = async (numero, mensaje) => {
-  const texto = mensaje.toLowerCase().trim();
+             const name =
+             ctx.pushName ||
+             ctx.message?.profile?.name ||
+             ctx.from;
 
-  if (!sesiones[numero]) {
-    sesiones[numero] = { paso: null };
-  }
+                 await state.update({ nombre: name });
 
-  const sesion = sesiones[numero];
+                 await flowDynamic("Perfecto 👍 ¿Para qué fecha deseas agendar la visita?");
+                    }
+            )
+    .addAnswer(
+        "Por favor, indícanos la fecha (Ejemplo: Lunes 15 de Marzo a las 4pm)",
+        { capture: true },
+        async (ctx, { state, flowDynamic }) => {
+            const nombreUsuario = state.get('nombre');
+            const fechaCita = ctx.body;
+            
+            // Guardamos en Google Sheets
+            await guardarCita({
+                fecha: fechaCita,
+                telefono: ctx.from,
+                nombre: nombreUsuario,
+                mensaje: "Interesado en visita inmobiliaria"
+            });
 
-  // BOTONES
-  if (mensaje === "UBICACION") {
-    return metaService.enviarMensajeTexto(
-      numero,
-      "📍 Estamos ubicados en Tarapoto.\nhttps://maps.google.com"
+            await flowDynamic(`✅ ¡Excelente, ${nombreUsuario}! Tu cita ha sido registrada para el ${fechaCita}.`);
+            await flowDynamic("Te enviamos nuestro catálogo de propiedades: https://tu-link-de-catalogo.com 🏡✨");
+        }
     );
-  }
 
-  if (mensaje === "ASESOR") {
-    return metaService.enviarMensajeTexto(
-      numero,
-      "👨‍💼 Un asesor se comunicará contigo pronto."
-    );
-  }
-
-  if (mensaje === "AGENDAR") {
-    sesion.paso = "nombre";
-    return metaService.enviarMensajeTexto(
-      numero,
-      "Perfecto 👍\nPor favor escribe tu nombre completo:"
-    );
-  }
-
-  // FLUJO AGENDAR
-  if (sesion.paso === "nombre") {
-    sesion.nombre = mensaje;
-    sesion.paso = "fecha";
-    return metaService.enviarMensajeTexto(
-      numero,
-      "📅 ¿Qué fecha deseas para tu cita?"
-    );
-  }
-
-  if (sesion.paso === "fecha") {
-    sesion.fecha = mensaje;
-    sesion.telefono = numero;
-
-    await guardarEnSheets(sesion);
-
-    delete sesiones[numero];
-
-    return metaService.enviarMensajeTexto(
-      numero,
-      "✅ Tu cita fue agendada correctamente.\nNos comunicaremos contigo pronto."
-    );
-  }
-
-  // MENÚ PRINCIPAL
-  return metaService.enviarBotones(
-    numero,
-    "Bienvenido a Monarka Group 🏡\nSelecciona una opción:"
-  );
-};
-
-module.exports = { determinarFlujo };
+module.exports = mainFlow;
