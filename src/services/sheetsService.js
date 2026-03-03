@@ -15,7 +15,7 @@ const auth = new google.auth.GoogleAuth({
 
 const sheets = google.sheets({ version: "v4", auth });
 
-async function agregarFila(datos = []) {
+async function guardarCita(data) {
   try {
     // Asegúrate de que el SPREADSHEET_ID sea el correcto
     await sheets.spreadsheets.values.append({
@@ -23,7 +23,7 @@ async function agregarFila(datos = []) {
       range: "Hoja1", // <--- IMPORTANTE: Verifica el nombre de la pestaña
       valueInputOption: "USER_ENTERED",
       requestBody: {
-        values: [datos],
+        values: [Object.values(data)],
       },
     });
     console.log("✅ Guardado en Sheets");
@@ -34,4 +34,4 @@ async function agregarFila(datos = []) {
   }
 }
 
-module.exports = { agregarFila };
+module.exports = { guardarCita };

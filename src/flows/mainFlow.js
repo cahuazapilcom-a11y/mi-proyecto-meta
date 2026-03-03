@@ -1,7 +1,5 @@
 // mainFlow.js
-
-const { sendTextMessage } = require("../services/metaService");
-const { saveAppointment } = require("../services/sheetsService");
+const { guardarCita } = require("../services/sheetsService");
 
 // Estado en memoria (para producción real usar DB o Redis)
 const userStates = {};
@@ -100,7 +98,7 @@ Ahora indícame la *fecha* que deseas para tu cita (ejemplo: 20/02/2026)`
         fechaRegistro: new Date().toISOString(),
       };
 
-      await saveAppointment(data);
+      await guardarCita(data);
 
       await sendTextMessage(
         from,
