@@ -1,74 +1,74 @@
+// metaService.js
+
 const axios = require("axios");
+const { google } = require("googleapis");
 
-const {
-  META_VERSION,
-  META_PHONE_ID,
-  META_TOKEN
-} = process.env;
+// ============================
+// CONFIG META
+// ============================
 
-if (!META_VERSION || !META_PHONE_ID || !META_TOKEN) {
-  throw new Error("Faltan variables de entorno META_VERSION, META_PHONE_ID o META_TOKEN");
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
+
+// ============================
+// ENVIAR MENSAJE
+// ============================
+
+async function sendTextMessage(to, message) {
+  try {
+    await axios.post(
+      `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
+      {
+        messaging_product: "whatsapp",
+        to: to,
+        type: "text",
+        text: { body: message },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Error enviando mensaje:", error.response?.data || error);
+  }
 }
 
-const URL = `https://graph.facebook.com/${META_VERSION}/${META_PHONE_ID}/messages`;
+// ============================
+// GOOGLE SHEETS
+// ============================
 
-const axiosInstance = axios.create({
-  baseURL: URL,
-  timeout: 10000,
-  headers: {
-    Authorization: `Bearer ${META_TOKEN}`,
-    "Content-Type": "application/json"
-  }
-});
-
-const enviarPeticion = async (payload) => {
+async function saveAppointment(data) {
   try {
-    const response = await axiosInstance.post("", payload);
-    return response.data;
+    const auth = new google.auth.GoogleAuth({
+      credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+
+    const sheets = google.sheets({ version: "v4", auth });
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: process.env.SPREADSHEET_ID,
+      range: "Citas!A:D",
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [
+          [
+            data.nombre,
+            data.telefono,
+            data.fecha,
+            data.fechaRegistro,
+          ],
+        ],
+      },
+    });
+
+    console.log("Cita guardada en Google Sheets");
   } catch (error) {
-    console.error("Error WhatsApp API:", error.response?.data || error.message);
-    throw error.response?.data || error.message;
+    console.error("Error guardando en Sheets:", error);
   }
-};
+}
 
-const enviarMensajeTexto = async (numero, texto) => {
-  return enviarPeticion({
-    messaging_product: "whatsapp",
-    to: numero,
-    type: "text",
-    text: { body: texto }
-  });
-};
-
-const enviarBotones = async (numero, cuerpoTexto) => {
-  return enviarPeticion({
-    messaging_product: "whatsapp",
-    to: numero,
-    type: "interactive",
-    interactive: {
-      type: "button",
-      body: { text: cuerpoTexto },
-      action: {
-        buttons: [
-          {
-            type: "reply",
-            reply: { id: "UBICACION", title: "Ubicación" }
-          },
-          {
-            type: "reply",
-            reply: { id: "AGENDAR", title: "Agendar cita" }
-          },
-          {
-            type: "reply",
-            reply: { id: "ASESOR", title: "Asesor" }
-          }
-        ]
-      }
-    }
-  });
-};
-
-module.exports = {
-  enviarMensaje: enviarMensajeTexto,
-  enviarBotones
-};
+module.exports = { sendTextMessage, saveAppointment };
