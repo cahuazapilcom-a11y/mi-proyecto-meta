@@ -1,4 +1,5 @@
 // mainFlow.js
+const { sendTextMessage } = require("../services/metaService");
 const { guardarCita } = require("../services/sheetsService");
 
 // Estado en memoria (para producción real usar DB o Redis)
