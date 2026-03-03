@@ -1,4 +1,3 @@
-const { addKeyword } = require('@bot-whatsapp/bot');
 const { guardarCita } = require('../services/sheetsService');
 
 /* ==============================
