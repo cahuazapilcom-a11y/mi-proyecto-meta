@@ -2,7 +2,7 @@
 
 require("dotenv").config();
 const express = require("express");
-const { handleIncomingMessage } = require("./mainFlow");
+const { handleIncomingMessage } = require("./flows/mainFlow");
 
 const app = express();
 app.use(express.json());
