@@ -81,7 +81,7 @@ Por favor escríbeme tu *nombre completo* para agendar tu cita:`
       await sendTextMessage(
         from,
         `Gracias 🙌  
-Ahora indícame la *fecha* que deseas para tu cita (ejemplo: 20/02/2026)`
+Ahora indícame la *fecha* que deseas para tu cita `
       );
       return;
     }
@@ -105,7 +105,7 @@ Ahora indícame la *fecha* que deseas para tu cita (ejemplo: 20/02/2026)`
         from,
         `✅ Tu cita fue agendada correctamente.
 
-Muchas gracias por confiar en *FLYHOUSE* ✈️  
+Muchas gracias por confiar en *FLYHOUSE SAC* 
 Nos comunicaremos contigo pronto.
 
 ¿Te puedo ayudar en algo más?`
