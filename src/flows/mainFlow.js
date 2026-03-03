@@ -1,99 +1,84 @@
-const { guardarCita } = require('../services/sheetsService');
+const metaService = require("../services/metaService");
+const { guardarCita } = require("../services/sheetsService");
 
-/* ==============================
-   FLUJO PRINCIPAL
-============================== */
+const sesiones = {};
 
-const mainFlow = addKeyword(['hola', 'buenas', 'info', 'inicio', 'menu'])
-  .addAnswer(
-    null,
-    null,
-    async (ctx, { flowDynamic }) => {
+const determinarFlujo = async (numero, mensaje) => {
+  const texto = mensaje?.toLowerCase();
 
-      const name =
-        ctx.pushName ||
-        ctx.message?.profile?.name ||
-        ctx.from;
+  if (!sesiones[numero]) {
+    sesiones[numero] = { paso: "inicio" };
+  }
 
-      await flowDynamic(
-        `Hola ${name} 👋 bienvenido a *FLYHOUSE*, tu consulta en línea.\n\n` +
-        `Selecciona una opción:\n\n` +
-        `1️⃣ Ubicación\n` +
-        `2️⃣ Agendar cita\n` +
-        `3️⃣ Asesor`
-      );
-    }
-  )
+  const sesion = sesiones[numero];
 
-  /* ==============================
+  /* =========================
+     MENÚ PRINCIPAL
+  ========================== */
+  if (
+    texto === "hola" ||
+    texto === "menu" ||
+    texto === "inicio"
+  ) {
+    sesion.paso = "menu";
+
+    return await metaService.enviarMensaje(
+      numero,
+      `👋 Bienvenido a *FLYHOUSE*\n\n` +
+      `1️⃣ Ubicación\n` +
+      `2️⃣ Agendar cita\n` +
+      `3️⃣ Asesor`
+    );
+  }
+
+  /* =========================
      UBICACIÓN
-  ============================== */
-  .addAnswer(
-    ['1', 'ubicacion', 'Ubicación'],
-    null,
-    async (ctx, { flowDynamic }) => {
-      await flowDynamic("📍 Nos encontramos en: [TU DIRECCIÓN AQUÍ]");
-      await flowDynamic("Aquí tienes nuestra ubicación en Google Maps: https://maps.app.goo.gl/D1o8jzQHbe3JPr2KA");
-    }
-  )
+  ========================== */
+  if (texto === "1" || texto === "ubicacion") {
+    return await metaService.enviarMensaje(
+      numero,
+      "📍 Nos encontramos en: [TU DIRECCIÓN AQUÍ]\n" +
+      "Google Maps: https://maps.app.goo.gl/D1o8jzQHbe3JPr2KA"
+    );
+  }
 
-  /* ==============================
+  /* =========================
      ASESOR
-  ============================== */
-  .addAnswer(
-    ['3', 'asesor', 'Asesor'],
-    null,
-    async (ctx, { flowDynamic }) => {
-      await flowDynamic("👨‍💼 En un momento un asesor de *FLYHOUSE* se pondrá en contacto contigo.");
-    }
-  )
+  ========================== */
+  if (texto === "3" || texto === "asesor") {
+    return await metaService.enviarMensaje(
+      numero,
+      "👨‍💼 Un asesor se pondrá en contacto contigo."
+    );
+  }
 
-  /* ==============================
-     AGENDAR CITA - PASO 1
-  ============================== */
-  .addAnswer(
-    ['2', 'agendar cita', 'Agendar cita'],
-    { capture: true },
-    async (ctx, { flowDynamic, state }) => {
+  /* =========================
+     AGENDAR CITA
+  ========================== */
+  if (texto === "2" || texto === "agendar cita") {
+    sesion.paso = "fecha";
 
-      const name =
-        ctx.pushName ||
-        ctx.message?.profile?.name ||
-        ctx.from;
+    return await metaService.enviarMensaje(
+      numero,
+      "📅 ¿Para qué fecha deseas agendar la visita?"
+    );
+  }
 
-      await state.update({ nombre: name });
+  if (sesion.paso === "fecha") {
+    await guardarCita({
+      fecha: mensaje,
+      telefono: numero,
+      nombre: numero,
+      mensaje: "Interesado en visita inmobiliaria",
+    });
 
-      await flowDynamic("Perfecto 👍 ¿Para qué fecha deseas agendar la visita?");
-    }
-  )
+    sesion.paso = "inicio";
 
-  /* ==============================
-     AGENDAR CITA - PASO 2
-  ============================== */
-  .addAnswer(
-    "Por favor, indícanos la fecha (Ejemplo: Lunes 15 de Marzo a las 4pm)",
-    { capture: true },
-    async (ctx, { state, flowDynamic }) => {
+    return await metaService.enviarMensaje(
+      numero,
+      `✅ Tu cita ha sido registrada para el ${mensaje}.`
+    );
+  }
+};
 
-      const nombreUsuario = state.get('nombre');
-      const fechaCita = ctx.body;
-
-      // Guardar en Google Sheets
-      await guardarCita({
-        fecha: fechaCita,
-        telefono: ctx.from,
-        nombre: nombreUsuario,
-        mensaje: "Interesado en visita inmobiliaria"
-      });
-
-      await flowDynamic(
-        `✅ ¡Excelente, ${nombreUsuario}! Tu cita ha sido registrada para el ${fechaCita}.`
-      );
-
-      await flowDynamic(
-        "🏡 Te enviamos nuestro catálogo de propiedades: https://tu-link-de-catalogo.com"
-      );
-    }
-  );
-
-module.exports = mainFlow;
+module.exports = { determinarFlujo };
