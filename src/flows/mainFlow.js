@@ -1,7 +1,7 @@
 // mainFlow.js
 
-const { sendTextMessage } = require("./metaService");
-const { saveAppointment } = require("./metaService");
+const { sendTextMessage } = require("../services/metaService");
+const { saveAppointment } = require("../services/sheetsService");
 
 // Estado en memoria (para producción real usar DB o Redis)
 const userStates = {};
