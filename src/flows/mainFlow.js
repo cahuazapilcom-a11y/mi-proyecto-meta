@@ -25,7 +25,7 @@ async function handleIncomingMessage(message, profile, senderInfo) {
     ) {
       userStates[from] = { step: null };
 
-      const welcomeMessage = `👋 Hola *${userName}*, bienvenido a *CORPORACIÓN FLYHOUSE SAC* ✈️
+      const welcomeMessage = `👋 Hola *${userName}*, bienvenido a *CORPORACIÓN FLYHOUSE SAC,Tu consulta en linea* ✈️
 
 Estoy aquí para ayudarte 😊  
 ¿En qué puedo asistirte hoy?
@@ -44,13 +44,13 @@ Estoy aquí para ayudarte 😊
     if (text.includes("requisito") || text === "1") {
       await sendTextMessage(
         from,
-        `📄 Te envío los requisitos y catálogo:
+        `📄 Te envío los requisitos y info:
 
-📍 Ubicación:
-https://maps.app.goo.gl/D1o8jzQHbe3JPr2KA
+    Documento:
+https://www.facebook.com/share/1arsQ2uQkG/?mibextid=wwXIfr
 
 📎 Documento:
-https://tudominio.com/catalogo.pdf
+https://drive.google.com/file/d/1HBRYma72_lk4iITQGsKrW17e_RxDmTeq/view?usp=drive_link
 
 ¿Te puedo ayudar en algo más? 😊`
       );
@@ -143,7 +143,7 @@ También puedes escribir *"asesor en línea"* si deseas atención inmediata.`
 [TU DIRECCIÓN AQUÍ]
 
 Google Maps:
-https://maps.app.goo.gl/D1o8jzQHbe3JPr2KA`
+https://maps.app.goo.gl/hLhhaGatonhgt8Jv8?g_st=iw`
       );
       return;
     }
@@ -154,7 +154,7 @@ https://maps.app.goo.gl/D1o8jzQHbe3JPr2KA`
     if (text.includes("horario") || text.includes("hora")) {
       await sendTextMessage(
         from,
-        `🕒 Nuestro horario de atención:
+        `🕒 Nuestro horario de atención es de :
 
 Lunes a Viernes  
 ⏰ 8:00 AM - 1:00 PM  
@@ -171,7 +171,7 @@ Lunes a Viernes
         from,
         `😊 De nada *${userName}*, estoy para ayudarte.
 
-Gracias por confiar en FLYHOUSE ✈️`
+Gracias por confiar en FLYHOUSE SAC `
       );
       return;
     }
