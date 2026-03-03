@@ -69,6 +69,6 @@ const enviarBotones = async (numero, cuerpoTexto) => {
 };
 
 module.exports = {
-  enviarMensajeTexto,
+  enviarMensaje: enviarMensajeTexto,
   enviarBotones
 };
