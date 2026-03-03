@@ -13,6 +13,8 @@ const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 // ============================
 // ENVIAR MENSAJE
 // ============================
+console.log("Token usado:", process.env.META_TOKEN);
+console.log("PhoneNumberId usado:", process.env.PHONE_NUMBER_ID);
 
 
 async function sendTextMessage(to, message) {
