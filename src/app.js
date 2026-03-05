@@ -1,77 +1,60 @@
 require("dotenv").config();
-
 const express = require("express");
 const { handleIncomingMessage } = require("./flows/mainFlow");
 
 const app = express();
-
 app.use(express.json());
 
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 
-// ========================
-// VERIFICAR WEBHOOK
-// ========================
+/* =========================
+VERIFICAR WEBHOOK META
+========================= */
 
 app.get("/webhook", (req, res) => {
-
-  const verifyToken = process.env.VERIFY_TOKEN;
-
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
-  if (mode === "subscribe" && token === verifyToken) {
+  if (mode && token === VERIFY_TOKEN) {
+    console.log("Webhook verificado");
     res.status(200).send(challenge);
   } else {
     res.sendStatus(403);
   }
-
 });
 
-
-// ========================
-// RECIBIR MENSAJES
-// ========================
+/* =========================
+RECIBIR MENSAJES
+========================= */
 
 app.post("/webhook", async (req, res) => {
-
   try {
 
-    const body = req.body;
+    const entry = req.body.entry?.[0];
+    const change = entry?.changes?.[0];
+    const value = change?.value;
 
-    if (body.object) {
+    const message = value?.messages?.[0];
+    const contact = value?.contacts?.[0];
 
-      const message =
-        body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
-
-      const profile =
-        body.entry?.[0]?.changes?.[0]?.value?.contacts?.[0]?.profile;
-
-      const senderInfo =
-        body.entry?.[0]?.changes?.[0]?.value?.contacts?.[0];
-
-      if (message) {
-        await handleIncomingMessage(message, profile, senderInfo);
-      }
-
-      res.sendStatus(200);
-
-    } else {
-
-      res.sendStatus(404);
-
+    if (message) {
+      await handleIncomingMessage(message, contact);
     }
+
+    res.sendStatus(200);
 
   } catch (error) {
 
-    console.error("Webhook error:", error);
-
+    console.error("Error webhook:", error);
     res.sendStatus(500);
 
   }
-
 });
 
+/* =========================
+SERVER
+========================= */
 
 const PORT = process.env.PORT || 3000;
 

@@ -1,38 +1,36 @@
 const { google } = require("googleapis");
 
 async function guardarCita(data) {
-  try {
 
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n")
-  },
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"]
-});
+  const auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"]
+  });
 
-    const sheets = google.sheets({ version: "v4", auth });
+  const sheets = google.sheets({
+    version: "v4",
+    auth
+  });
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: process.env.SPREADSHEET_ID,
-      range: "Hoja1",
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [[
-          data.nombre,
-          data.telefono,
-          data.fecha,
-          data.fechaRegistro
-        ]]
-      }
-    });
+  await sheets.spreadsheets.values.append({
 
-    console.log("Cita guardada en Sheets");
+    spreadsheetId: process.env.SPREADSHEET_ID,
 
-  } catch (error) {
-    console.error("Error guardando cita:", error);
-    throw error;
-  }
+    range: "hoja1",
+
+    valueInputOption: "USER_ENTERED",
+
+    requestBody: {
+      values: [[
+        data.nombre,
+        data.telefono,
+        data.fecha,
+        data.fechaRegistro
+      ]]
+    }
+
+  });
+
 }
 
 module.exports = { guardarCita };
