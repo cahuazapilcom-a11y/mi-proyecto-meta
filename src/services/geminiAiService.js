@@ -4,7 +4,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Crear modelo UNA SOLA VEZ (mejor rendimiento)
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  model: "gemini-1.5-pro",
   systemInstruction: `
 Eres un asesor virtual de la empresa CORPORACIÓN FLYHOUSE SAC.
 
