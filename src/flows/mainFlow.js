@@ -1,8 +1,7 @@
-// mainFlow.js
 const { sendTextMessage } = require("../services/metaService");
 const { guardarCita } = require("../services/sheetsService");
+const { geminiAiService } = require("../services/geminiAiService");
 
-// Estado en memoria (para producción real usar DB o Redis)
 const userStates = {};
 
 function getUserName(profile, senderInfo) {
@@ -10,174 +9,159 @@ function getUserName(profile, senderInfo) {
 }
 
 async function handleIncomingMessage(message, profile, senderInfo) {
+
   try {
+
     const from = senderInfo.wa_id;
     const userName = getUserName(profile, senderInfo);
+
     const text = message?.text?.body?.toLowerCase().trim();
 
     if (!text) return;
 
-    // =============================
+    // ======================
     // BIENVENIDA
-    // =============================
-    if (
-      ["hi", "hello", "hola", "hola!", "buenas", "buenos dias", "buenas tardes"].includes(text)
-    ) {
+    // ======================
+
+    if (["hola","hi","hello","buenas","menu"].includes(text)) {
+
       userStates[from] = { step: null };
 
-      const welcomeMessage = `👋 Hola *${userName}*, bienvenido a *CORPORACIÓN FLYHOUSE SAC,Tu consulta en linea* ✈️
+      const msg = `👋 Hola *${userName}*
 
-Estoy aquí para ayudarte 😊  
-¿En qué puedo asistirte hoy?
+Bienvenido a *CORPORACIÓN FLYHOUSE SAC*
 
-1️⃣ Requisitos TP  
-2️⃣ Agendar cita  
+¿Cómo puedo ayudarte?
+
+1️⃣ Requisitos TP
+2️⃣ Agendar cita
 3️⃣ Asesor en línea`;
 
-      await sendTextMessage(from, welcomeMessage);
+      await sendTextMessage(from, msg);
       return;
     }
 
-    // =============================
+    // ======================
     // REQUISITOS
-    // =============================
-    if (text.includes("requisito") || text === "1") {
-      await sendTextMessage(
-        from,
-        `📄 Te envío los requisitos y info:
+    // ======================
 
-    Documento:
-https://www.facebook.com/share/1arsQ2uQkG/?mibextid=wwXIfr
+    if (text === "1" || text.includes("requisito")) {
 
-📎 Documento:
-https://drive.google.com/file/d/1HBRYma72_lk4iITQGsKrW17e_RxDmTeq/view?usp=drive_link
+      await sendTextMessage(from,
 
-¿Te puedo ayudar en algo más? 😊`
-      );
+`📄 Información y requisitos:
+
+Documento
+https://www.facebook.com/share/1arsQ2uQkG/
+
+📎 Archivo
+https://drive.google.com/file/d/1HBRYma72_lk4iITQGsKrW17e_RxDmTeq/view
+
+¿Necesitas algo más?`);
+
       return;
     }
 
-    // =============================
-    // AGENDAR CITA - PASO 1
-    // =============================
-    if (text.includes("cita") || text === "2") {
+    // ======================
+    // AGENDAR CITA
+    // ======================
+
+    if (text === "2" || text.includes("cita")) {
+
       userStates[from] = { step: "waiting_name" };
 
-      await sendTextMessage(
-        from,
-        `Perfecto *${userName}* 😊  
-Por favor escríbeme tu *nombre completo* para agendar tu cita:`
-      );
+      await sendTextMessage(from,
+`Perfecto ${userName}
+
+Escríbeme tu *nombre completo* para agendar la cita`);
+
       return;
     }
 
-    // =============================
     // GUARDAR NOMBRE
-    // =============================
+
     if (userStates[from]?.step === "waiting_name") {
+
       userStates[from].name = text;
       userStates[from].step = "waiting_date";
 
-      await sendTextMessage(
-        from,
-        `Gracias 🙌  
-Ahora indícame la *fecha* que deseas para tu cita `
-      );
+      await sendTextMessage(from,
+`Gracias.
+
+Ahora envíame la *fecha* para tu cita`);
+
       return;
     }
 
-    // =============================
-    // GUARDAR FECHA Y ENVIAR A GOOGLE SHEETS
-    // =============================
+    // GUARDAR FECHA
+
     if (userStates[from]?.step === "waiting_date") {
-      const appointmentDate = text;
 
       const data = {
         nombre: userStates[from].name,
         telefono: from,
-        fecha: appointmentDate,
-        fechaRegistro: new Date().toISOString(),
+        fecha: text,
+        fechaRegistro: new Date().toISOString()
       };
 
       await guardarCita(data);
 
-      await sendTextMessage(
-        from,
-        `✅ Tu cita fue agendada correctamente.
+      await sendTextMessage(from,
 
-Muchas gracias por confiar en *FLYHOUSE SAC* 
-Nos comunicaremos contigo pronto.
+`✅ Cita registrada correctamente.
 
-¿Te puedo ayudar en algo más?`
-      );
+Gracias por confiar en FLYHOUSE SAC`);
 
       userStates[from] = { step: null };
+
       return;
     }
 
-    // =============================
+    // ======================
     // ASESOR
-    // =============================
-    if (
-      text.includes("asesor") ||
-      text.includes("promotor") ||
-      text === "3"
-    ) {
-      await sendTextMessage(
-        from,
-        `👨‍💼 Un asesor se pondrá en contacto contigo en breve.
+    // ======================
 
-También puedes escribir *"asesor en línea"* si deseas atención inmediata.`
-      );
+    if (text === "3" || text.includes("asesor")) {
+
+      await sendTextMessage(from,
+
+`👨‍💼 Un asesor te contactará pronto.
+
+Si deseas atención inmediata escribe:
+"asesor urgente"`);
+
       return;
     }
 
-    // =============================
+    // ======================
     // UBICACIÓN
-    // =============================
-    if (text.includes("ubicacion") || text.includes("direccion")) {
-      await sendTextMessage(
-        from,
-        `📍 Nos encontramos en:
+    // ======================
 
-[TU DIRECCIÓN AQUÍ]
+    if (text.includes("ubicacion")) {
 
-Google Maps:
-https://maps.app.goo.gl/hLhhaGatonhgt8Jv8?g_st=iw`
-      );
+      await sendTextMessage(from,
+
+`📍 Nuestra ubicación:
+
+https://maps.app.goo.gl/hLhhaGatonhgt8Jv8`);
+
       return;
     }
 
-    // =============================
-    // HORARIO
-    // =============================
-    if (text.includes("horario") || text.includes("hora")) {
-      await sendTextMessage(
-        from,
-        `🕒 Nuestro horario de atención es de :
+    // ======================
+    // FALLBACK IA
+    // ======================
 
-Lunes a Viernes  
-⏰ 8:00 AM - 1:00 PM  
-⏰ 3:00 PM - 7:00 PM`
-      );
-      return;
-    }
+    const aiResponse = await geminiAiService(text);
 
-    // =============================
-    // GRACIAS
-    // =============================
-    if (text.includes("gracias")) {
-      await sendTextMessage(
-        from,
-        `😊 De nada *${userName}*, estoy para ayudarte.
+    await sendTextMessage(from, aiResponse);
 
-Gracias por confiar en FLYHOUSE SAC `
-      );
-      return;
-    }
   } catch (error) {
+
     console.error("Error en mainFlow:", error);
+
   }
+
 }
 
 module.exports = { handleIncomingMessage };

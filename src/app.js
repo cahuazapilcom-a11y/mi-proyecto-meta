@@ -1,31 +1,46 @@
-// app.js
-
 require("dotenv").config();
+
 const express = require("express");
 const { handleIncomingMessage } = require("./flows/mainFlow");
 
 const app = express();
+
 app.use(express.json());
 
+
+// ========================
+// VERIFICAR WEBHOOK
+// ========================
+
 app.get("/webhook", (req, res) => {
-  const verify_token = process.env.VERIFY_TOKEN;
+
+  const verifyToken = process.env.VERIFY_TOKEN;
 
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
-  if (mode && token === verify_token) {
+  if (mode === "subscribe" && token === verifyToken) {
     res.status(200).send(challenge);
   } else {
     res.sendStatus(403);
   }
+
 });
 
+
+// ========================
+// RECIBIR MENSAJES
+// ========================
+
 app.post("/webhook", async (req, res) => {
+
   try {
+
     const body = req.body;
 
     if (body.object) {
+
       const message =
         body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
@@ -40,16 +55,26 @@ app.post("/webhook", async (req, res) => {
       }
 
       res.sendStatus(200);
+
     } else {
+
       res.sendStatus(404);
+
     }
+
   } catch (error) {
-    console.error("Error en webhook:", error);
+
+    console.error("Webhook error:", error);
+
     res.sendStatus(500);
+
   }
+
 });
 
+
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
