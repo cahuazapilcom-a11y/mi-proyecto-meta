@@ -2,7 +2,10 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-const prompt = `
+// Crear modelo UNA SOLA VEZ (mejor rendimiento)
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
+  systemInstruction: `
 Eres un asesor virtual de la empresa CORPORACIÓN FLYHOUSE SAC.
 
 Responde de forma corta, clara y profesional.
@@ -12,25 +15,30 @@ Reglas:
 - No generar conversación larga
 - Responder solo la pregunta
 - Máximo 3 líneas
-`;
+`,
+});
 
 async function geminiAiService(message) {
   try {
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-pro",
-      systemInstruction: prompt
-    });
+    if (!message) {
+      return "No se recibió ninguna consulta.";
+    }
 
     const result = await model.generateContent(message);
 
     const response = await result.response;
 
-    return response.text();
+    const text = response.text();
+
+    return text;
 
   } catch (error) {
-    console.error("Error Gemini:", error);
-    return "Lo siento, en este momento no puedo responder. Intenta nuevamente.";
+
+    console.error("❌ Error Gemini:", error.message);
+
+    return "El sistema está ocupado. Intenta nuevamente en unos minutos.";
+
   }
 }
 
