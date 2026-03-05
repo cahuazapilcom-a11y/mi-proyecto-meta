@@ -18,7 +18,7 @@ async function geminiAiService(message) {
   try {
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.0-pro",
+      model: "gemini-1.5-pro",
       systemInstruction: prompt
     });
 
