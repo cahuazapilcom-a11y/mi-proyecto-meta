@@ -1,30 +1,33 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// validar API KEY
 if (!process.env.GEMINI_API_KEY) {
-  throw new Error("GEMINI_API_KEY no está configurada en las variables de entorno");
+  throw new Error("GEMINI_API_KEY no configurada");
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash-latest",
+  generationConfig: {
+    temperature: 0.7,
+    maxOutputTokens: 150
+  }
+});
+
 async function geminiAiService(message) {
+
   try {
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash-latest"
-    });
-
     const prompt = `
-Eres un asesor inmobiliario de la empresa FLYHOUSE SAC.
+Eres un asesor inmobiliario de FLYHOUSE SAC.
 
-Reglas de respuesta:
-- amable
-- corto
-- profesional
-- estilo chat de WhatsApp
+Reglas:
+- responde corto
+- tono profesional
+- estilo WhatsApp
 - máximo 3 líneas
 
-Pregunta del cliente:
+Cliente dice:
 ${message}
 `;
 
@@ -32,13 +35,13 @@ ${message}
 
     const response = result.response.text();
 
-    return response;
+    return response || "Un asesor te responderá en breve.";
 
   } catch (error) {
 
-    console.error("Error Gemini:", error?.message || error);
+    console.error("Error Gemini:", error.message);
 
-    return "Lo siento, en este momento no puedo responder. Un asesor te contactará pronto.";
+    return "En este momento no puedo responder. Un asesor te contactará pronto.";
   }
 }
 

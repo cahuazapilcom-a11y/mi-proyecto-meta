@@ -5,27 +5,27 @@ const { getUserState, clearUserState } = require("../utils/userState");
 
 async function handleIncomingMessage(message, contact) {
 
-  const from = contact.wa_id;
-  const name = contact.profile?.name || "cliente";
+  const from = contact?.wa_id;
+  const name = contact?.profile?.name || "cliente";
 
-  const text = message?.text?.body?.toLowerCase();
+  const text = message?.text?.body?.toLowerCase()?.trim();
+
+  if (!text) return;
 
   const state = getUserState(from);
 
-/* =========================
-BIENVENIDA
-========================= */
+  /* =========================
+  BIENVENIDA
+  ========================= */
 
-if (text === "hola") {
+  if (text === "hola") {
 
-await sendButtons(from,
-
+    await sendButtons(from,
 `Hola ${name} 👋
 
 Bienvenido a *FLYHOUSE SAC*
 
 ¿En qué podemos ayudarte?`,
-
 [
 {
 type: "reply",
