@@ -12,7 +12,7 @@ async function guardarCita(data) {
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: "Citas!A:D",
+      range: "Hoja1",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [[
