@@ -1,5 +1,5 @@
 const { sendTextMessage, sendButtons } = require("../services/metaService");
-const geminiAiService = require("../services/geminiAiService");
+const geminiAiService = require("../services/openAiService");
 const { guardarCita } = require("../services/sheetsService");
 const { getUserState, clearUserState } = require("../utils/userState");
 
