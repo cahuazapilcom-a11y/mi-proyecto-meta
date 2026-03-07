@@ -45,12 +45,12 @@ class MessageHandler {
 
     const text = `Hola ${name} 👋
 
-Bienvenido a *CORPORACION FLYHOUSE SAC*
+Bienvenido a *CORPORACION FLYHOUSE SAC Tu Asesor Virtual*
 
 ¿En qué puedo ayudarte?`;
 
     const buttons = [
-      { type: "reply", reply: { id: "req", title: "Requisitos" } },
+      { type: "reply", reply: { id: "req", title: "RequisitosTP" } },
       { type: "reply", reply: { id: "cita", title: "Agendar cita" } },
       { type: "reply", reply: { id: "ubi", title: "Ubicación" } },
     ];
@@ -60,7 +60,7 @@ Bienvenido a *CORPORACION FLYHOUSE SAC*
 
   async handleMenuOption(to, option) {
     switch (option) {
-      case "requisitos":
+      case "requisitosTP":
         await whatsappService.sendMessage(
           to,
           "Te envío los requisitos del programa."
