@@ -2,51 +2,26 @@ import OpenAI from "openai";
 import config from "../config/env.js";
 
 const client = new OpenAI({
-  apiKey: config.OPENROUTER_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1",
+    apiKey: config.OPENAI_API_KEY,
 });
 
 const openAiService = async (message) => {
-  try {
-
-    const completion = await client.chat.completions.create({
-      model: "openai/gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `
-Eres un asesor inmobiliario de la empresa CORPORACION FLYHOUSE SAC.
-
-Responde:
-- corto
-- claro
-- profesional
-- como mensaje de WhatsApp
-
-No saludes.
-No hagas conversación.
-Solo responde la pregunta del cliente.
-
-Si es una consulta compleja sugiere contactar a FLYHOUSE.
-`
-        },
-        {
-          role: "user",
-          content: message
-        }
-      ],
-      temperature: 0.6,
-      max_tokens: 300
-    });
-
-    return completion.choices[0].message.content;
-
-  } catch (error) {
-
-    console.error("❌ Error OpenRouter:", error);
-
-    return "Lo siento, en este momento no puedo responder.";
-  }
-};
+    try {
+        const response = await client.chat.completions.create({
+            messages: [
+                { 
+                    role: 'system', 
+                    content: 'Eres un gestor inmobiliario experto de CORPORACION FLYHOUSE SAC. Responde de forma clara, profesional y concisa sobre el programa Techo Propio. No saludes, no generes charla innecesaria, solo responde directamente a la pregunta. Si el usuario necesita atención urgente, indícale que debe llamarnos.' 
+                }, 
+                { role: 'user', content: message }
+            ],
+            model: 'gpt-4o'
+        });
+        return response.choices[0].message.content;
+    } catch (error) {
+        console.error("Error en OpenAI Service:", error);
+        return "Lo siento, tuve un problema al procesar tu consulta. Inténtalo de nuevo más tarde.";
+    }
+}
 
 export default openAiService;
