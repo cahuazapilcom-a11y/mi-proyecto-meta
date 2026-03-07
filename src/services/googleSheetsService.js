@@ -18,7 +18,7 @@ const appendToSheet = async (values) => {
             range: 'Hoja1', // Asegúrate que la hoja se llame 'reservas'
             valueInputOption: 'RAW',
             insertDataOption: 'INSERT_ROWS',
-            resource: { values: [values] },
+            resource: { values: [values] },  
             auth: authClient,
         });
         
