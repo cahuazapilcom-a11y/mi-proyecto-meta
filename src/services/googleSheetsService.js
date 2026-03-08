@@ -5,10 +5,10 @@ const sheets = google.sheets('v4');
 
 const appendToSheet = async (values) => {
     try {
-        const auth = new google.auth.GoogleAuth({
-            keyFile: path.join(process.cwd(), 'src/credentials', 'credentials.json'),
-            scopes: ['https://www.googleapis.com/auth/spreadsheets']
-        });
+          const auth = new google.auth.GoogleAuth({
+             credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+             scopes: ['https://www.googleapis.com/auth/spreadsheets']
+                });
 
         const authClient = await auth.getClient();
         const spreadsheetId = '153jUI87fT7z2ThWuw-E6NSa0aPGD6KvYxPDKPUXR6H8';
