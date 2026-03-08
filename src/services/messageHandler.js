@@ -17,11 +17,18 @@ class MessageHandler {
 
       if (this.isGreeting(incomingMessage)) {
         await this.sendWelcomeMessage(from, senderInfo);
-      } else if (this.appointmentState[from]) {
+
+      } 
+      else if (this.isAdvisorRequest(incomingMessage)) {
+        await this.sendAdvisorContacts(from);
+      } 
+      else if (this.appointmentState[from]) {
         await this.handleAppointmentFlow(from, incomingMessage);
-      } else if (this.assistantState[from]) {
+      } 
+      else if (this.assistantState[from]) {
         await this.handleAssistantFlow(from, incomingMessage);
-      } else {
+      } 
+      else {
         await this.handleMenuOption(from, incomingMessage);
       }
     }
@@ -29,6 +36,7 @@ class MessageHandler {
     if (message?.type === "interactive") {
       const option =
         message?.interactive?.button_reply?.title.toLowerCase().trim();
+
       await this.handleMenuOption(from, option);
     }
 
@@ -40,6 +48,32 @@ class MessageHandler {
     return greetings.some((g) => message.includes(g));
   }
 
+  // NUEVO: detectar cuando piden asesor
+  isAdvisorRequest(message) {
+    const advisorWords = [
+      "asesor",
+      "quiero hablar con un asesor",
+      "quiero comunicarme con un asesor",
+      "hablar con asesor",
+      "asesor humano",
+      "asesor real"
+    ];
+
+    return advisorWords.some((word) => message.includes(word));
+  }
+
+  // NUEVO: enviar números
+  async sendAdvisorContacts(to) {
+    const text = `📞 Para comunicarte con un asesor de *CORPORACION FLYHOUSE SAC* puedes llamar o escribir a:
+
+📱 +51 918 156 548
+📱 +51 977 745 422
+
+Un asesor te atenderá personalmente.`;
+
+    await whatsappService.sendMessage(to, text);
+  }
+
   async sendWelcomeMessage(to, senderInfo) {
     const name = senderInfo?.profile?.name || "Cliente";
 
@@ -47,7 +81,7 @@ class MessageHandler {
 
 Bienvenido a *CORPORACION FLYHOUSE SAC Tu Asesor Virtual*
 
-¿En qué puedo ayudarte?`;
+¿En qué puedo ayudarte hoy?`;
 
     const buttons = [
       { type: "reply", reply: { id: "req", title: "RequisitosTP" } },
@@ -60,6 +94,7 @@ Bienvenido a *CORPORACION FLYHOUSE SAC Tu Asesor Virtual*
 
   async handleMenuOption(to, option) {
     switch (option) {
+
       case "requisitosTP":
         await whatsappService.sendMessage(
           to,
@@ -70,30 +105,34 @@ Bienvenido a *CORPORACION FLYHOUSE SAC Tu Asesor Virtual*
       case "agendar cita":
       case "cita":
         this.appointmentState[to] = { step: "name" };
+
         await whatsappService.sendMessage(
           to,
-          "Perfecto, escribe tu nombre completo."
+          "Perfecto, escribe tu nombre completo por favor para registrar tu cita."
         );
+
         break;
 
       case "ubicación":
       case "ubicacion":
+
         await whatsappService.sendMessage(
           to,
           "📍 Nuestra ubicación:\nhttps://maps.app.goo.gl/D1o8jzQHbe3JPr2KA"
         );
+
         break;
 
       case "asesor":
-        this.assistantState[to] = { step: "question" };
-        await whatsappService.sendMessage(
-          to,
-          "Escribe tu consulta y un asesor virtual te responderá."
-        );
+
+        await this.sendAdvisorContacts(to);
+
         break;
 
       default:
+
         const aiResponse = await openAiService(option);
+
         await whatsappService.sendMessage(to, aiResponse);
     }
   }
@@ -102,6 +141,7 @@ Bienvenido a *CORPORACION FLYHOUSE SAC Tu Asesor Virtual*
     const state = this.appointmentState[to];
 
     if (state.step === "name") {
+
       state.name = message;
       state.step = "date";
 
@@ -114,6 +154,7 @@ Bienvenido a *CORPORACION FLYHOUSE SAC Tu Asesor Virtual*
     }
 
     if (state.step === "date") {
+
       state.date = message;
 
       await appendToSheet([
@@ -126,7 +167,7 @@ Bienvenido a *CORPORACION FLYHOUSE SAC Tu Asesor Virtual*
 
       await whatsappService.sendMessage(
         to,
-        "✅ Tu cita fue registrada correctamente."
+        "✅ Tu cita fue registrada correctamente, gracias por confiar en nosotros."
       );
 
       delete this.appointmentState[to];
@@ -134,6 +175,7 @@ Bienvenido a *CORPORACION FLYHOUSE SAC Tu Asesor Virtual*
   }
 
   async handleAssistantFlow(to, message) {
+
     const response = await openAiService(message);
 
     await whatsappService.sendMessage(to, response);
