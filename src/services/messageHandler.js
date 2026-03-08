@@ -66,8 +66,8 @@ class MessageHandler {
   async sendAdvisorContacts(to) {
     const text = `📞 Para comunicarte con un asesor de *CORPORACION FLYHOUSE SAC* puedes llamar o escribir a:
 
-📱 +51 918 156 548
-📱 +51 977 745 422
+📱 +51 930 320 473
+📱 +51 916 556 016 
 
 Un asesor te atenderá personalmente.`;
 
