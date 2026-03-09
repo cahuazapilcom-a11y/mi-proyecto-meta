@@ -11,6 +11,6 @@ app.get('/', (req, res) => {
     res.send('Corporación Flyhouse Bot - Activo');
 });
 
-app.listen(config.PORT, () => {
-    console.log(`🚀 Servidor escuchando en puerto: ${config.PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Servidor escuchando en puerto: ${PORT}`);
 });
